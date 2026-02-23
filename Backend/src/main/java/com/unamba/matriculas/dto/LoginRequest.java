@@ -1,8 +1,17 @@
 package com.unamba.matriculas.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
-    private String username;
-    private String password;
+    @NotBlank(message = "El identificador es obligatorio")
+    private String identificador; // DNI o código de estudiante
     
-    // TODO: Agregar getters y setters
+    @NotBlank(message = "El voucher es obligatorio")
+    private String voucher;
 }

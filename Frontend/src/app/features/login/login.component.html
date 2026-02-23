@@ -1,4 +1,57 @@
 <div class="login-container">
-  <h2>Iniciar Sesión</h2>
-  <!-- TODO: Agregar formulario de login -->
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Login Ingresante</h2>
+      <p>Ingresa con tu DNI y voucher de pago</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="dni">DNI</label>
+        <input 
+          type="text" 
+          id="dni" 
+          class="form-control" 
+          [(ngModel)]="dni" 
+          name="dni"
+          placeholder="Ingrese su DNI"
+          maxlength="8"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="voucher">Voucher de Pago</label>
+        <input 
+          type="text" 
+          id="voucher" 
+          class="form-control" 
+          [(ngModel)]="voucher" 
+          name="voucher"
+          placeholder="Ingrese el número de voucher"
+          required
+        />
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        <span *ngIf="!loading">Ingresar</span>
+        <span *ngIf="loading">Cargando...</span>
+      </button>
+    </form>
+    
+    <div class="login-footer">
+      <p>¿Ya eres estudiante regular? <a routerLink="/login-regular">Ingresa aquí</a></p>
+    </div>
+  </div>
 </div>
+
+<app-modal 
+  [isOpen]="modalOpen" 
+  [title]="modalTitle"
+  [showFooter]="false"
+  (onClose)="closeModal()">
+  <div [class]="'alert alert-' + modalType">
+    {{ modalMessage }}
+  </div>
+</app-modal>
+

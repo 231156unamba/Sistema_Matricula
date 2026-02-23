@@ -1,0 +1,52 @@
+<div class="inicio-container">
+  <div class="hero-section">
+    <h1 class="hero-title">Bienvenido al Sistema de Matrículas</h1>
+    <p class="hero-subtitle">Universidad Nacional Micaela Bastidas de Apurímac</p>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="anuncios-section">
+      <h2 class="section-title">
+        <span class="icon">📢</span>
+        Tablón de Anuncios
+      </h2>
+
+      <div class="spinner" *ngIf="loading"></div>
+
+      <div class="anuncios-grid" *ngIf="!loading">
+        <div class="anuncio-card" *ngFor="let anuncio of anuncios" [class]="getTipoClass(anuncio.tipo)">
+          <div class="anuncio-header">
+            <span class="anuncio-icon">{{ getTipoIcon(anuncio.tipo) }}</span>
+            <span class="anuncio-tipo">{{ anuncio.tipo }}</span>
+          </div>
+          <h3 class="anuncio-titulo">{{ anuncio.titulo }}</h3>
+          <p class="anuncio-contenido">{{ anuncio.contenido }}</p>
+          <div class="anuncio-footer" *ngIf="anuncio.fechaInicio">
+            <span class="anuncio-fecha">
+              📅 {{ anuncio.fechaInicio | date:'dd/MM/yyyy HH:mm' }}
+              <span *ngIf="anuncio.fechaFin"> - {{ anuncio.fechaFin | date:'dd/MM/yyyy HH:mm' }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="no-anuncios" *ngIf="anuncios.length === 0">
+          <p>No hay anuncios disponibles en este momento</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-card">
+        <h3>¿Eres Ingresante?</h3>
+        <p>Realiza tu matrícula por primera vez con tu voucher de pago y DNI</p>
+        <a routerLink="/login-ingresante" class="btn btn-primary">Ir a Matrícula Ingresante</a>
+      </div>
+
+      <div class="info-card">
+        <h3>¿Eres Estudiante Regular?</h3>
+        <p>Matricúlate en los cursos de tu siguiente semestre</p>
+        <a routerLink="/login-regular" class="btn btn-primary">Ir a Matrícula Regular</a>
+      </div>
+    </div>
+  </div>
+</div>
