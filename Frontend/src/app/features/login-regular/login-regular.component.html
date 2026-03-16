@@ -2,10 +2,24 @@
   <div class="login-card">
     <div class="login-header">
       <h2>Login Regular</h2>
-      <p>Ingresa con tu código de estudiante y voucher</p>
+      <p>Ingresa con tu DNI y código de estudiante</p>
     </div>
     
     <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="dni">DNI</label>
+        <input 
+          type="text" 
+          id="dni" 
+          class="form-control" 
+          [(ngModel)]="dni" 
+          name="dni"
+          placeholder="Ingrese su DNI"
+          maxlength="8"
+          required
+        />
+      </div>
+      
       <div class="form-group">
         <label for="codigo">Código de Estudiante</label>
         <input 
@@ -15,19 +29,6 @@
           [(ngModel)]="codigo" 
           name="codigo"
           placeholder="Ej: 20240001"
-          required
-        />
-      </div>
-      
-      <div class="form-group">
-        <label for="voucher">Voucher de Pago</label>
-        <input 
-          type="text" 
-          id="voucher" 
-          class="form-control" 
-          [(ngModel)]="voucher" 
-          name="voucher"
-          placeholder="Ingrese el número de voucher"
           required
         />
       </div>

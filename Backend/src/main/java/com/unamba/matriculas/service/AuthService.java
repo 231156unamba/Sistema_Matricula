@@ -1,9 +1,9 @@
 package com.unamba.matriculas.service;
 
+import com.unamba.matriculas.dto.AuthResult;
+import com.unamba.matriculas.model.Administrador;
 import com.unamba.matriculas.model.Estudiante;
-import com.unamba.matriculas.model.Pago;
 import com.unamba.matriculas.repository.EstudianteRepository;
-import com.unamba.matriculas.repository.PagoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,31 +26,59 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
     
+    // Devolvemos el manejo de tokens al frontend si es necesario,
+    // o simplemente mantenemos la estructura que devuelve el Estudiante.
     private final EstudianteRepository estudianteRepository;
-    private final PagoRepository pagoRepository;
+    private final KeycloakIntegrationService keycloakIntegrationService;
     
     public Estudiante loginIngresante(String dni, String voucher) throws Exception {
-        Optional<Pago> pago = pagoRepository.findByVoucherAndValidadoTrue(voucher);
-        if (pago.isEmpty()) {
-            throw new Exception("Voucher no válido");
-        }
+        // En keycloak, el username para la bd es el dni.
+        // La contraseña para ingresantes, tal como se indicó en tus reglas, es el voucher.
+        AuthResult authResult = keycloakIntegrationService.login(dni, voucher);
         
-        return estudianteRepository.findByDni(dni).orElse(null);
+        if ("ESTUDIANTE".equals(authResult.getTipoPersona()) && authResult.getUser() instanceof Estudiante) {
+            Estudiante estudiante = (Estudiante) authResult.getUser();
+            if (Estudiante.TipoEstudiante.INGRESANTE != estudiante.getTipo()) {
+                throw new Exception("El usuario autenticado no es un INGRESANTE.");
+            }
+            return estudiante;
+        } else {
+            throw new Exception("Tipo de persona incorrecto para este login.");
+        }
     }
     
-    public Estudiante loginRegular(String codigoEstudiante, String voucher) throws Exception {
-        Optional<Pago> pago = pagoRepository.findByVoucherAndValidadoTrue(voucher);
-        if (pago.isEmpty()) {
-            throw new Exception("Voucher no válido");
+    public Estudiante loginRegular(String dni, String codigoEstudiante) throws Exception {
+        // Para estudiantes Regulares, el username es el dni, el password es el código de estudiante.
+        AuthResult authResult = keycloakIntegrationService.login(dni, codigoEstudiante);
+        
+        if ("ESTUDIANTE".equals(authResult.getTipoPersona()) && authResult.getUser() instanceof Estudiante) {
+            Estudiante estudiante = (Estudiante) authResult.getUser();
+            
+            if (estudiante.getEstado() != Estudiante.EstadoEstudiante.ACTIVO) {
+                throw new Exception("Estudiante no está activo en el sistema local");
+            }
+            
+            if (Estudiante.TipoEstudiante.REGULAR != estudiante.getTipo()) {
+                throw new Exception("El usuario autenticado no es un REGULAR.");
+            }
+            
+            return estudiante;
+        } else {
+            throw new Exception("Tipo de persona incorrecto.");
         }
+    }
+    
+    public Administrador loginAdmin(String usuario, String password) throws Exception {
+        AuthResult authResult = keycloakIntegrationService.login(usuario, password);
         
-        Estudiante estudiante = estudianteRepository.findByCodigoEstudiante(codigoEstudiante)
-            .orElseThrow(() -> new Exception("Estudiante no encontrado"));
-        
-        if (estudiante.getEstado() != Estudiante.EstadoEstudiante.ACTIVO) {
-            throw new Exception("Estudiante no está activo");
+        if ("ADMIN".equals(authResult.getTipoPersona()) && authResult.getUser() instanceof Administrador) {
+            Administrador admin = (Administrador) authResult.getUser();
+            if (!admin.getActivo()) {
+                throw new Exception("El administrador no está activo.");
+            }
+            return admin;
+        } else {
+            throw new Exception("El usuario autenticado no tiene permisos de administrador.");
         }
-        
-        return estudiante;
     }
 }

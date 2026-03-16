@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,10 @@ public class EstudianteService {
             .orElseThrow(() -> new Exception("Estudiante no encontrado"));
     }
     
+    public Optional<Estudiante> buscarPorDni(String dni) {
+        return estudianteRepository.findByDni(dni);
+    }
+    
     public Estudiante actualizarEstado(Long id, Estudiante.EstadoEstudiante nuevoEstado) throws Exception {
         Estudiante estudiante = obtenerPorId(id);
         estudiante.setEstado(nuevoEstado);
@@ -37,5 +42,26 @@ public class EstudianteService {
         Estudiante estudiante = obtenerPorId(id);
         estudiante.setCreditosMaximos(nuevosCreditos);
         return estudianteRepository.save(estudiante);
+    }
+    
+    public Estudiante guardar(Estudiante estudiante) {
+        return estudianteRepository.save(estudiante);
+    }
+    
+    public void eliminar(Long id) throws Exception {
+        Estudiante estudiante = obtenerPorId(id);
+        estudianteRepository.delete(estudiante);
+    }
+    
+    public List<Estudiante> obtenerPorTipo(Estudiante.TipoEstudiante tipo) {
+        return estudianteRepository.findByTipo(tipo);
+    }
+    
+    public List<Estudiante> obtenerPorEstado(Estudiante.EstadoEstudiante estado) {
+        return estudianteRepository.findByEstado(estado);
+    }
+    
+    public long contarPorTipo(Estudiante.TipoEstudiante tipo) {
+        return estudianteRepository.countByTipo(tipo);
     }
 }

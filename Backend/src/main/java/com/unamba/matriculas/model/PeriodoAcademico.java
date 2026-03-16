@@ -2,15 +2,9 @@ package com.unamba.matriculas.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "periodos_academicos")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PeriodoAcademico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,4 +32,13 @@ public class PeriodoAcademico {
     public enum EstadoPeriodo {
         ABIERTO, CERRADO
     }
+
+    public Long getIdPeriodo() { return idPeriodo; }
+    public void setIdPeriodo(Long idPeriodo) { this.idPeriodo = idPeriodo; }
+    public Integer getAnio() { return anio; }
+    public void setAnio(Integer anio) { this.anio = anio; }
+    public Semestre getSemestre() { return semestre; }
+    public void setSemestre(Semestre semestre) { this.semestre = semestre; }
+    public EstadoPeriodo getEstado() { return estado; }
+    public void setEstado(EstadoPeriodo estado) { this.estado = estado; }
 }

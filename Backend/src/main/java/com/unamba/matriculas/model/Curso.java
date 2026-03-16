@@ -2,15 +2,9 @@ package com.unamba.matriculas.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "cursos")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,4 +32,25 @@ public class Curso {
     @Max(value = 10, message = "El semestre no puede exceder 10")
     @Column(name = "semestre", nullable = false)
     private Integer semestre;
+
+    public Curso() {}
+
+    public Curso(Long idCurso, String codigoCurso, String nombre, Integer creditos, Integer semestre) {
+        this.idCurso = idCurso;
+        this.codigoCurso = codigoCurso;
+        this.nombre = nombre;
+        this.creditos = creditos;
+        this.semestre = semestre;
+    }
+
+    public Long getIdCurso() { return idCurso; }
+    public void setIdCurso(Long idCurso) { this.idCurso = idCurso; }
+    public String getCodigoCurso() { return codigoCurso; }
+    public void setCodigoCurso(String codigoCurso) { this.codigoCurso = codigoCurso; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public Integer getCreditos() { return creditos; }
+    public void setCreditos(Integer creditos) { this.creditos = creditos; }
+    public Integer getSemestre() { return semestre; }
+    public void setSemestre(Integer semestre) { this.semestre = semestre; }
 }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/matriculas")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class MatriculaController {
     
@@ -39,11 +38,24 @@ public class MatriculaController {
         }
     }
     
-    @Data
-    @AllArgsConstructor
     static class MatriculaResponse {
         private boolean success;
         private String message;
         private Matricula matricula;
+
+        public MatriculaResponse() {}
+
+        public MatriculaResponse(boolean success, String message, Matricula matricula) {
+            this.success = success;
+            this.message = message;
+            this.matricula = matricula;
+        }
+
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public Matricula getMatricula() { return matricula; }
+        public void setMatricula(Matricula matricula) { this.matricula = matricula; }
     }
 }

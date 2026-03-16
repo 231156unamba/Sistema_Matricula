@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class AuthController {
     
@@ -50,11 +49,24 @@ public class AuthController {
         }
     }
     
-    @Data
-    @AllArgsConstructor
     static class LoginResponse {
         private boolean success;
         private String message;
         private Estudiante estudiante;
+
+        public LoginResponse() {}
+
+        public LoginResponse(boolean success, String message, Estudiante estudiante) {
+            this.success = success;
+            this.message = message;
+            this.estudiante = estudiante;
+        }
+
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public Estudiante getEstudiante() { return estudiante; }
+        public void setEstudiante(Estudiante estudiante) { this.estudiante = estudiante; }
     }
 }

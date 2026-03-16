@@ -13,8 +13,8 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
   styleUrls: ['./login-regular.component.css']
 })
 export class LoginRegularComponent {
+  dni = '';
   codigo = '';
-  voucher = '';
   loading = false;
   
   modalOpen = false;
@@ -28,13 +28,13 @@ export class LoginRegularComponent {
   ) {}
 
   onSubmit() {
-    if (!this.codigo || !this.voucher) {
+    if (!this.dni || !this.codigo) {
       this.showModal('Error', 'Por favor complete todos los campos', 'error');
       return;
     }
 
     this.loading = true;
-    this.authService.loginRegular(this.codigo, this.voucher).subscribe({
+    this.authService.loginRegular(this.dni, this.codigo).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.success) {

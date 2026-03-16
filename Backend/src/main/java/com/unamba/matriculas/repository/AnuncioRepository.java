@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
     List<Anuncio> findByActivoTrueOrderByFechaCreacionDesc();
+    List<Anuncio> findByTipoAndActivoTrueOrderByFechaCreacionDesc(Anuncio.TipoAnuncio tipo);
 }

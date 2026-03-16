@@ -1,0 +1,32 @@
+<!-- Bootstrap Modal -->
+<div class="modal fade" [class.show]="isOpen" [style.display]="isOpen ? 'block' : 'none'" tabindex="-1" *ngIf="isOpen">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" [class]="'bg-' + getBootstrapColor() + ' text-white'">
+        <h5 class="modal-title d-flex align-items-center">
+          <i [class]="'bi ' + getIcon() + ' me-2'"></i>
+          {{ title }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+      </div>
+      <div class="modal-body">
+        <p *ngIf="message" class="mb-0">{{ message }}</p>
+        <ng-content></ng-content>
+      </div>
+      <div class="modal-footer" *ngIf="showFooter">
+        <button type="button" class="btn btn-secondary" (click)="close()" *ngIf="showCancelButton">
+          {{ cancelText }}
+        </button>
+        <button 
+          type="button"
+          class="btn" 
+          [class]="'btn-' + getBootstrapColor()"
+          (click)="confirm()" 
+          *ngIf="showConfirmButton">
+          {{ confirmText }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="isOpen" *ngIf="isOpen" (click)="close()"></div>

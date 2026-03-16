@@ -32,6 +32,8 @@
     "@angular/platform-server": "^21.1.0",
     "@angular/router": "^21.1.0",
     "@angular/ssr": "^21.1.4",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -41,9 +43,14 @@
     "@angular/build": "^21.1.4",
     "@angular/cli": "^21.1.4",
     "@angular/compiler-cli": "^21.1.0",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "autoprefixer": "^10.4.27",
     "jsdom": "^27.1.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }

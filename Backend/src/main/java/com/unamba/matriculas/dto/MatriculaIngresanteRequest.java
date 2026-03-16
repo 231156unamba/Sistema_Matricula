@@ -1,13 +1,7 @@
 package com.unamba.matriculas.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class MatriculaIngresanteRequest {
     @NotBlank(message = "El DNI es obligatorio")
     @Size(min = 8, max = 8, message = "El DNI debe tener 8 dígitos")
@@ -39,4 +33,40 @@ public class MatriculaIngresanteRequest {
     
     @NotBlank(message = "La hoja de matrícula es obligatoria")
     private String hojaMatricula;
+
+    public MatriculaIngresanteRequest() {}
+
+    public MatriculaIngresanteRequest(String dni, String nombres, String apellidos, String voucher, String declaracionJurada, String certificadoEstudios, String boletaMatricula, String boletaExamen, String pagoCentroMedico, String hojaMatricula) {
+        this.dni = dni;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
+        this.voucher = voucher;
+        this.declaracionJurada = declaracionJurada;
+        this.certificadoEstudios = certificadoEstudios;
+        this.boletaMatricula = boletaMatricula;
+        this.boletaExamen = boletaExamen;
+        this.pagoCentroMedico = pagoCentroMedico;
+        this.hojaMatricula = hojaMatricula;
+    }
+
+    public String getDni() { return dni; }
+    public void setDni(String dni) { this.dni = dni; }
+    public String getNombres() { return nombres; }
+    public void setNombres(String nombres) { this.nombres = nombres; }
+    public String getApellidos() { return apellidos; }
+    public void setApellidos(String apellidos) { this.apellidos = apellidos; }
+    public String getVoucher() { return voucher; }
+    public void setVoucher(String voucher) { this.voucher = voucher; }
+    public String getDeclaracionJurada() { return declaracionJurada; }
+    public void setDeclaracionJurada(String declaracionJurada) { this.declaracionJurada = declaracionJurada; }
+    public String getCertificadoEstudios() { return certificadoEstudios; }
+    public void setCertificadoEstudios(String certificadoEstudios) { this.certificadoEstudios = certificadoEstudios; }
+    public String getBoletaMatricula() { return boletaMatricula; }
+    public void setBoletaMatricula(String boletaMatricula) { this.boletaMatricula = boletaMatricula; }
+    public String getBoletaExamen() { return boletaExamen; }
+    public void setBoletaExamen(String boletaExamen) { this.boletaExamen = boletaExamen; }
+    public String getPagoCentroMedico() { return pagoCentroMedico; }
+    public void setPagoCentroMedico(String pagoCentroMedico) { this.pagoCentroMedico = pagoCentroMedico; }
+    public String getHojaMatricula() { return hojaMatricula; }
+    public void setHojaMatricula(String hojaMatricula) { this.hojaMatricula = hojaMatricula; }
 }

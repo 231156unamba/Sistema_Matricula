@@ -2,16 +2,10 @@ package com.unamba.matriculas.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "estudiantes")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Estudiante {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +35,9 @@ public class Estudiante {
     @Column(name = "tipo", nullable = false)
     private TipoEstudiante tipo;
     
+    @Column(name = "carrera")
+    private String carrera;
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     private EstadoEstudiante estado = EstadoEstudiante.ACTIVO;
@@ -60,4 +57,40 @@ public class Estudiante {
     public enum EstadoEstudiante {
         ACTIVO, INHABILITADO, RETIRADO
     }
+
+    public Estudiante() {}
+
+    public Estudiante(Long idEstudiante, String codigoEstudiante, String dni, String nombres, String apellidos, TipoEstudiante tipo, EstadoEstudiante estado, Integer creditosMaximos, LocalDateTime fechaRegistro, String carrera) {
+        this.idEstudiante = idEstudiante;
+        this.codigoEstudiante = codigoEstudiante;
+        this.dni = dni;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
+        this.tipo = tipo;
+        this.estado = estado;
+        this.creditosMaximos = creditosMaximos;
+        this.fechaRegistro = fechaRegistro;
+        this.carrera = carrera;
+    }
+
+    public Long getIdEstudiante() { return idEstudiante; }
+    public void setIdEstudiante(Long idEstudiante) { this.idEstudiante = idEstudiante; }
+    public String getCodigoEstudiante() { return codigoEstudiante; }
+    public void setCodigoEstudiante(String codigoEstudiante) { this.codigoEstudiante = codigoEstudiante; }
+    public String getDni() { return dni; }
+    public void setDni(String dni) { this.dni = dni; }
+    public String getNombres() { return nombres; }
+    public void setNombres(String nombres) { this.nombres = nombres; }
+    public String getApellidos() { return apellidos; }
+    public void setApellidos(String apellidos) { this.apellidos = apellidos; }
+    public TipoEstudiante getTipo() { return tipo; }
+    public void setTipo(TipoEstudiante tipo) { this.tipo = tipo; }
+    public EstadoEstudiante getEstado() { return estado; }
+    public void setEstado(EstadoEstudiante estado) { this.estado = estado; }
+    public Integer getCreditosMaximos() { return creditosMaximos; }
+    public void setCreditosMaximos(Integer creditosMaximos) { this.creditosMaximos = creditosMaximos; }
+    public LocalDateTime getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+    public String getCarrera() { return carrera; }
+    public void setCarrera(String carrera) { this.carrera = carrera; }
 }

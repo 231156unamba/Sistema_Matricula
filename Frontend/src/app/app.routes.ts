@@ -19,8 +19,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login-regular/login-regular.component').then(m => m.LoginRegularComponent)
   },
   { 
-    path: 'registro-ingresante', 
+    path: 'matricula-ingresante', 
     loadComponent: () => import('./features/ingresante/registro.component').then(m => m.RegistroComponent)
+  },
+  { 
+    path: 'keycloak-callback', 
+    loadComponent: () => import('./features/keycloak-callback/keycloak-callback.component').then(m => m.KeycloakCallbackComponent)
   },
   { 
     path: 'matricula-regular', 

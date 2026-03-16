@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AnuncioService } from '../../core/services/anuncio.service';
+import { ModalService } from '../../shared/services/modal.service';
 
 @Component({
   selector: 'app-inicio',
@@ -14,7 +15,10 @@ export class InicioComponent implements OnInit {
   anuncios: any[] = [];
   loading = true;
 
-  constructor(private anuncioService: AnuncioService) {}
+  constructor(
+    private anuncioService: AnuncioService,
+    private modalService: ModalService
+  ) {}
 
   ngOnInit() {
     this.cargarAnuncios();
@@ -36,6 +40,15 @@ export class InicioComponent implements OnInit {
         console.log('Backend no disponible, usando datos de ejemplo');
       }
     });
+  }
+
+  abrirModalMatricula() {
+    this.modalService.showConfirmation(
+      '¿Qué tipo de alumno eres?',
+      'Selecciona si eres ingresante o alumno regular para continuar con tu matrícula.',
+      'Ingresante',
+      'Regular'
+    );
   }
 
   obtenerAnunciosEjemplo() {

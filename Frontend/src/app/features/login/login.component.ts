@@ -70,5 +70,17 @@ export class LoginComponent {
   closeModal() {
     this.modalOpen = false;
   }
+
+  loginWithKeycloak() {
+    this.loading = true;
+    // Redirigir a Keycloak o abrir popup
+    const keycloakUrl = 'http://localhost:8080/auth/realms/unamba/protocol/openid-connect/auth?' +
+      'client_id=frontend-app&' +
+      'redirect_uri=' + encodeURIComponent(window.location.origin + '/keycloak-callback') + '&' +
+      'response_type=code&' +
+      'scope=openid profile email';
+    
+    window.location.href = keycloakUrl;
+  }
 }
 

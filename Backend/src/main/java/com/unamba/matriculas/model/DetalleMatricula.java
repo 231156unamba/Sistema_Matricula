@@ -2,16 +2,10 @@ package com.unamba.matriculas.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "detalle_matricula")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class DetalleMatricula {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,4 +37,28 @@ public class DetalleMatricula {
     public enum EstadoCurso {
         EN_CURSO, APROBADO, DESAPROBADO
     }
+
+    public DetalleMatricula() {}
+
+    public DetalleMatricula(Long idDetalle, Matricula matricula, Curso curso, Integer vecesLlevado, BigDecimal notaFinal, EstadoCurso estado) {
+        this.idDetalle = idDetalle;
+        this.matricula = matricula;
+        this.curso = curso;
+        this.vecesLlevado = vecesLlevado;
+        this.notaFinal = notaFinal;
+        this.estado = estado;
+    }
+
+    public Long getIdDetalle() { return idDetalle; }
+    public void setIdDetalle(Long idDetalle) { this.idDetalle = idDetalle; }
+    public Matricula getMatricula() { return matricula; }
+    public void setMatricula(Matricula matricula) { this.matricula = matricula; }
+    public Curso getCurso() { return curso; }
+    public void setCurso(Curso curso) { this.curso = curso; }
+    public Integer getVecesLlevado() { return vecesLlevado; }
+    public void setVecesLlevado(Integer vecesLlevado) { this.vecesLlevado = vecesLlevado; }
+    public BigDecimal getNotaFinal() { return notaFinal; }
+    public void setNotaFinal(BigDecimal notaFinal) { this.notaFinal = notaFinal; }
+    public EstadoCurso getEstado() { return estado; }
+    public void setEstado(EstadoCurso estado) { this.estado = estado; }
 }

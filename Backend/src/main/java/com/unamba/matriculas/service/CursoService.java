@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +27,14 @@ public class CursoService {
     
     public List<Curso> obtenerPorSemestre(Integer semestre) {
         return cursoRepository.findBySemestre(semestre);
+    }
+    
+    public Optional<Curso> obtenerPorId(Long id) {
+        return cursoRepository.findById(id);
+    }
+    
+    public Optional<Curso> obtenerPorCodigo(String codigo) {
+        return cursoRepository.findByCodigoCurso(codigo);
     }
     
     public List<Curso> obtenerCursosDisponibles(Long idEstudiante, Integer semestreActual) {
@@ -56,5 +65,46 @@ public class CursoService {
     
     public Curso crear(Curso curso) {
         return cursoRepository.save(curso);
+    }
+    
+    public Curso actualizar(Long id, Curso cursoDetails) throws Exception {
+        Curso curso = obtenerPorId(id)
+            .orElseThrow(() -> new Exception("Curso no encontrado"));
+        
+        curso.setCodigoCurso(cursoDetails.getCodigoCurso());
+        curso.setNombre(cursoDetails.getNombre());
+        curso.setCreditos(cursoDetails.getCreditos());
+        curso.setSemestre(cursoDetails.getSemestre());
+        
+        return cursoRepository.save(curso);
+    }
+    
+    public void eliminar(Long id) throws Exception {
+        Curso curso = obtenerPorId(id)
+            .orElseThrow(() -> new Exception("Curso no encontrado"));
+        cursoRepository.delete(curso);
+    }
+    
+    public List<Prerrequisito> obtenerPrerrequisitos(Long idCurso) {
+        return prerrequisitoRepository.findByCurso_IdCurso(idCurso);
+    }
+    
+    public Prerrequisito agregarPrerrequisito(Long idCurso, Long idCursoPrerrequisito) throws Exception {
+        Curso curso = obtenerPorId(idCurso)
+            .orElseThrow(() -> new Exception("Curso no encontrado"));
+        Curso cursoPrerrequisito = obtenerPorId(idCursoPrerrequisito)
+            .orElseThrow(() -> new Exception("Curso prerrequisito no encontrado"));
+        
+        Prerrequisito prerrequisito = new Prerrequisito();
+        prerrequisito.setCurso(curso);
+        prerrequisito.setCursoPrerrequisito(cursoPrerrequisito);
+        
+        return prerrequisitoRepository.save(prerrequisito);
+    }
+    
+    public int calcularTotalCreditos(List<Long> idsCursos) {
+        return cursoRepository.findAllById(idsCursos).stream()
+            .mapToInt(Curso::getCreditos)
+            .sum();
     }
 }

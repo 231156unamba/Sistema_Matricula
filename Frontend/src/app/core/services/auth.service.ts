@@ -17,15 +17,19 @@ export class AuthService {
     });
   }
 
-  loginRegular(codigo: string, voucher: string): Observable<any> {
+  loginRegular(dni: string, codigo: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login/regular`, {
-      identificador: codigo,
-      voucher: voucher
+      identificador: dni,
+      voucher: codigo
     });
   }
 
   guardarSesion(estudiante: any) {
     localStorage.setItem('estudiante', JSON.stringify(estudiante));
+    // También guardar token si existe
+    if (estudiante.token) {
+      localStorage.setItem('token', estudiante.token);
+    }
   }
 
   obtenerSesion() {
@@ -35,5 +39,6 @@ export class AuthService {
 
   cerrarSesion() {
     localStorage.removeItem('estudiante');
+    localStorage.removeItem('token');
   }
 }
