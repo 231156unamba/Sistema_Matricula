@@ -31,7 +31,7 @@ public class AuthService {
     private final EstudianteRepository estudianteRepository;
     private final KeycloakIntegrationService keycloakIntegrationService;
     
-    public Estudiante loginIngresante(String dni, String voucher) throws Exception {
+    public AuthResult loginIngresante(String dni, String voucher) throws Exception {
         // En keycloak, el username para la bd es el dni.
         // La contraseña para ingresantes, tal como se indicó en tus reglas, es el voucher.
         AuthResult authResult = keycloakIntegrationService.login(dni, voucher);
@@ -41,13 +41,13 @@ public class AuthService {
             if (Estudiante.TipoEstudiante.INGRESANTE != estudiante.getTipo()) {
                 throw new Exception("El usuario autenticado no es un INGRESANTE.");
             }
-            return estudiante;
+            return authResult;
         } else {
             throw new Exception("Tipo de persona incorrecto para este login.");
         }
     }
     
-    public Estudiante loginRegular(String dni, String codigoEstudiante) throws Exception {
+    public AuthResult loginRegular(String dni, String codigoEstudiante) throws Exception {
         // Para estudiantes Regulares, el username es el dni, el password es el código de estudiante.
         AuthResult authResult = keycloakIntegrationService.login(dni, codigoEstudiante);
         
@@ -62,13 +62,13 @@ public class AuthService {
                 throw new Exception("El usuario autenticado no es un REGULAR.");
             }
             
-            return estudiante;
+            return authResult;
         } else {
             throw new Exception("Tipo de persona incorrecto.");
         }
     }
     
-    public Administrador loginAdmin(String usuario, String password) throws Exception {
+    public AuthResult loginAdmin(String usuario, String password) throws Exception {
         AuthResult authResult = keycloakIntegrationService.login(usuario, password);
         
         if ("ADMIN".equals(authResult.getTipoPersona()) && authResult.getUser() instanceof Administrador) {
@@ -76,7 +76,7 @@ public class AuthService {
             if (!admin.getActivo()) {
                 throw new Exception("El administrador no está activo.");
             }
-            return admin;
+            return authResult;
         } else {
             throw new Exception("El usuario autenticado no tiene permisos de administrador.");
         }

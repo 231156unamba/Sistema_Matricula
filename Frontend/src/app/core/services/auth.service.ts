@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthResponse } from '../models/auth-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,25 +11,26 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  loginIngresante(dni: string, voucher: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login/ingresante`, {
+  loginIngresante(dni: string, voucher: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login/ingresante`, {
       identificador: dni,
       voucher: voucher
     });
   }
 
-  loginRegular(dni: string, codigo: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login/regular`, {
+  loginRegular(dni: string, codigo: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login/regular`, {
       identificador: dni,
       voucher: codigo
     });
   }
 
-  guardarSesion(estudiante: any) {
-    localStorage.setItem('estudiante', JSON.stringify(estudiante));
-    // También guardar token si existe
-    if (estudiante.token) {
-      localStorage.setItem('token', estudiante.token);
+  guardarSesion(response: AuthResponse) {
+    if (response.estudiante) {
+      localStorage.setItem('estudiante', JSON.stringify(response.estudiante));
+    }
+    if (response.token) {
+      localStorage.setItem('token', response.token);
     }
   }
 

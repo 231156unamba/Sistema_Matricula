@@ -39,7 +39,7 @@ export class LoginComponent {
         this.loading = false;
         if (response.success) {
           if (response.estudiante) {
-            this.authService.guardarSesion(response.estudiante);
+            this.authService.guardarSesion(response);
             this.showModal('Éxito', 'Login exitoso', 'success');
             setTimeout(() => {
               this.router.navigate(['/matricula-ingresante']);

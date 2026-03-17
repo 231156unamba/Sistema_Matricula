@@ -38,7 +38,7 @@ export class LoginRegularComponent {
       next: (response) => {
         this.loading = false;
         if (response.success) {
-          this.authService.guardarSesion(response.estudiante);
+          this.authService.guardarSesion(response);
           this.showModal('Éxito', 'Login exitoso', 'success');
           setTimeout(() => {
             this.router.navigate(['/matricula-regular']);
