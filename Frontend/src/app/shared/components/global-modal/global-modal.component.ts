@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalService, ModalOptions } from '../../services/modal.service';
 import { Subscription } from 'rxjs';
@@ -40,11 +40,21 @@ export class GlobalModalComponent implements OnInit, OnDestroy {
   modalOptions: ModalOptions | null = null;
   private modalSubscription: Subscription | undefined;
 
-  constructor(private modalService: ModalService) {}
+  constructor(
+    private modalService: ModalService,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
+  ) {}
 
   ngOnInit(): void {
     this.modalSubscription = this.modalService.modal$.subscribe(
-      (options: ModalOptions | null) => this.modalOptions = options
+      (options: ModalOptions | null) => {
+        // Asegura actualización inmediata incluso si el request se resolvió fuera de Angular
+        this.zone.run(() => {
+          this.modalOptions = options;
+          this.cdr.detectChanges();
+        });
+      }
     );
   }
 

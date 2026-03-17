@@ -44,13 +44,3 @@
     </div>
   </div>
 </div>
-
-<app-modal 
-  [isOpen]="modalOpen" 
-  [title]="modalTitle"
-  [showFooter]="false"
-  (onClose)="closeModal()">
-  <div [class]="'alert alert-' + modalType">
-    {{ modalMessage }}
-  </div>
-</app-modal>
