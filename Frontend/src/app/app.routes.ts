@@ -30,6 +30,10 @@ export const routes: Routes = [
     path: 'matricula-regular', 
     loadComponent: () => import('./features/regular/seleccionar-cursos.component').then(m => m.SeleccionarCursosComponent)
   },
+  {
+    path: 'regular',
+    loadComponent: () => import('./features/regular-dashboard/regular-dashboard.component').then(m => m.RegularDashboardComponent)
+  },
   { 
     path: 'admin', 
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent)

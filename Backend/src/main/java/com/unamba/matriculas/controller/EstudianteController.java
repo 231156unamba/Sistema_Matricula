@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/estudiantes")
@@ -33,6 +34,16 @@ public class EstudianteController {
     public ResponseEntity<?> obtenerPorCodigo(@PathVariable String codigo) {
         try {
             return ResponseEntity.ok(estudianteService.obtenerPorCodigo(codigo));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/resumen-academico")
+    public ResponseEntity<?> obtenerResumenAcademico(@PathVariable Long id) {
+        try {
+            Map<String, Object> resumen = estudianteService.obtenerResumenAcademico(id);
+            return ResponseEntity.ok(resumen);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

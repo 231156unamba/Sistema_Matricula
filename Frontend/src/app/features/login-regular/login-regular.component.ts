@@ -42,7 +42,7 @@ export class LoginRegularComponent {
           const nombreCompleto = `${nombres} ${apellidos}`.trim();
           this.modalService.showSuccess('¡Bienvenid@!', nombreCompleto ? `Hola, ${nombreCompleto}` : 'Login exitoso');
           setTimeout(() => {
-            this.router.navigate(['/matricula-regular']);
+            this.router.navigate(['/regular']);
           }, 1500);
         } else {
           this.modalService.showError('Error', response.message);

@@ -1,0 +1,119 @@
+<div class="regular-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-person-badge"></i></div>
+      <div>
+        <div class="brand-title">Alumno Regular</div>
+        <div class="brand-subtitle" *ngIf="estudiante">{{ estudiante.codigoEstudiante || '—' }}</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn" type="button" *ngFor="let item of menu" (click)="onMenuClick(item.label)">
+        <i class="bi" [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </button>
+    </nav>
+  </aside>
+
+  <section class="content">
+    <div class="content-card">
+      <div class="content-header">
+        <div>
+          <h1 class="welcome-title">Bienvenid@ {{ nombreCompleto || '—' }}</h1>
+          <p class="welcome-subtitle">Aquí tienes tu resumen académico y tus datos principales.</p>
+        </div>
+        <div class="status-pill" *ngIf="estudiante">
+          <span class="dot" [class.dot-ok]="estudiante.estado === 'ACTIVO'"></span>
+          <span>{{ estudiante.estado }}</span>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2" *ngIf="!loading; else skeleton">
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">DNI</div>
+            <div class="tile-value">{{ estudiante?.dni || '—' }}</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Código</div>
+            <div class="tile-value">{{ estudiante?.codigoEstudiante || '—' }}</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Carrera</div>
+            <div class="tile-value">{{ estudiante?.carrera || '—' }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Año de ingreso</div>
+            <div class="tile-value">{{ anioIngreso }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Créditos del semestre (máx.)</div>
+            <div class="tile-value">{{ resumen?.creditosMaximos ?? estudiante?.creditosMaximos ?? '—' }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Créditos totales aprobados</div>
+            <div class="tile-value">{{ resumen?.creditosAprobados ?? '—' }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Cursos aprobados</div>
+            <div class="tile-value">{{ resumen?.cursosAprobados ?? '—' }}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="info-tile">
+            <div class="tile-label">Tipo</div>
+            <div class="tile-value">{{ estudiante?.tipo || '—' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #skeleton>
+        <div class="skeleton-grid">
+          <div class="sk" *ngFor="let _ of [1,2,3,4,5,6,7,8]"></div>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <!-- Modal de Horario -->
+  <app-modal 
+    [isOpen]="showHorarioModal" 
+    [title]="'Tu Horario - ' + (estudiante?.carrera || '')"
+    type="info"
+    [showFooter]="true"
+    [showImageSide]="false"
+    confirmText="Cerrar"
+    [showCancelButton]="false"
+    (onClose)="showHorarioModal = false"
+    (onConfirm)="showHorarioModal = false">
+    
+    <div class="horario-container">
+      <iframe *ngIf="horarioUrl && !imageError" [src]="horarioUrl" class="horario-pdf" (error)="onPdfError($event)"></iframe>
+      <div class="horario-error-msg" *ngIf="imageError">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        No se pudo cargar el horario para la carrera: {{ estudiante?.carrera }}
+        <br>
+        <small>Archivo esperado: .pdf</small>
+      </div>
+    </div>
+  </app-modal>
+</div>
+

@@ -19,6 +19,10 @@ export class EstudianteService {
     return this.http.get<Estudiante>(`${this.apiUrl}/${id}`);
   }
 
+  obtenerResumenAcademico(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/resumen-academico`);
+  }
+
   buscarPorDni(dni: string): Observable<Estudiante> {
     return this.http.get<Estudiante>(`${this.apiUrl}/dni/${dni}`);
   }

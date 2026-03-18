@@ -57,17 +57,17 @@ INSERT INTO prerrequisitos (id_curso, id_curso_prerrequisito) VALUES
 (17, 14);
 
 -- Estudiantes Regulares
-INSERT INTO estudiantes (codigo_estudiante, dni, nombres, apellidos, tipo, estado, creditos_maximos) VALUES
-('231001', '72345678', 'Ana', 'García Mendoza', 'REGULAR', 'ACTIVO', 23),
-('231002', '73456789', 'Luis', 'Torres Quispe', 'REGULAR', 'ACTIVO', 23),
-('231003', '74567890', 'Carmen', 'Flores Huamán', 'REGULAR', 'ACTIVO', 12),
-('222001', '71234567', 'Pedro', 'Mamani Cruz', 'REGULAR', 'ACTIVO', 23),
-('222002', '70123456', 'Rosa', 'Ccama Yupanqui', 'REGULAR', 'ACTIVO', 23);
+INSERT INTO estudiantes (codigo_estudiante, dni, nombres, apellidos, tipo, estado, creditos_maximos, carrera) VALUES
+('231001', '72345678', 'Ana', 'García Mendoza', 'REGULAR', 'ACTIVO', 23, 'Ingeniería de Sistemas'),
+('231002', '73456789', 'Luis', 'Torres Quispe', 'REGULAR', 'ACTIVO', 23, 'Ingeniería Civil'),
+('231003', '74567890', 'Carmen', 'Flores Huamán', 'REGULAR', 'ACTIVO', 12, 'Administración de Empresas'),
+('222001', '71234567', 'Pedro', 'Mamani Cruz', 'REGULAR', 'ACTIVO', 23, 'Ingeniería de Sistemas'),
+('222002', '70123456', 'Rosa', 'Ccama Yupanqui', 'REGULAR', 'ACTIVO', 23, 'Derecho');
 
 -- Estudiantes Ingresantes (sin código aún)
-INSERT INTO estudiantes (dni, nombres, apellidos, tipo, estado) VALUES
-('75678901', 'Miguel', 'Condori Apaza', 'INGRESANTE', 'ACTIVO'),
-('76789012', 'Julia', 'Huanca Quispe', 'INGRESANTE', 'ACTIVO');
+INSERT INTO estudiantes (dni, nombres, apellidos, tipo, estado, carrera) VALUES
+('75678901', 'Miguel', 'Condori Apaza', 'INGRESANTE', 'ACTIVO', 'Ingeniería de Sistemas'),
+('76789012', 'Julia', 'Huanca Quispe', 'INGRESANTE', 'ACTIVO', 'Medicina Veterinaria');
 
 -- Pagos Validados
 INSERT INTO pagos (id_estudiante, tipo_pago, voucher, monto, fecha_pago, validado) VALUES

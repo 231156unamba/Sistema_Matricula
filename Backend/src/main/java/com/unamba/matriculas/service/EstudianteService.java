@@ -1,11 +1,14 @@
 package com.unamba.matriculas.service;
 
 import com.unamba.matriculas.model.Estudiante;
+import com.unamba.matriculas.model.DetalleMatricula;
 import com.unamba.matriculas.repository.EstudianteRepository;
+import com.unamba.matriculas.repository.DetalleMatriculaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -13,6 +16,7 @@ import java.util.Optional;
 public class EstudianteService {
     
     private final EstudianteRepository estudianteRepository;
+    private final DetalleMatriculaRepository detalleMatriculaRepository;
     
     public List<Estudiante> obtenerTodos() {
         return estudianteRepository.findAll();
@@ -63,5 +67,24 @@ public class EstudianteService {
     
     public long contarPorTipo(Estudiante.TipoEstudiante tipo) {
         return estudianteRepository.countByTipo(tipo);
+    }
+
+    public Map<String, Object> obtenerResumenAcademico(Long idEstudiante) throws Exception {
+        Estudiante estudiante = obtenerPorId(idEstudiante);
+
+        List<DetalleMatricula> aprobados = detalleMatriculaRepository.findCursosAprobadosByEstudiante(idEstudiante);
+        long cursosAprobados = aprobados.size();
+        int creditosAprobados = aprobados.stream()
+            .map(DetalleMatricula::getCurso)
+            .filter(c -> c != null && c.getCreditos() != null)
+            .mapToInt(c -> c.getCreditos())
+            .sum();
+
+        return Map.of(
+            "idEstudiante", estudiante.getIdEstudiante(),
+            "cursosAprobados", cursosAprobados,
+            "creditosAprobados", creditosAprobados,
+            "creditosMaximos", estudiante.getCreditosMaximos()
+        );
     }
 }

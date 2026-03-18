@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="modal-overlay" *ngIf="isOpen" (click)="onOverlayClick($event)">
-      <div class="modal-content" [ngClass]="'modal-' + type" (click)="$event.stopPropagation()">
+      <div class="modal-content" [ngClass]="['modal-' + type, showImageSide ? '' : 'no-image-side']" (click)="$event.stopPropagation()">
         
         <div class="modal-main-row">
           <div class="modal-info-side">
@@ -26,7 +26,7 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
           
-          <div class="modal-image-side">
+          <div class="modal-image-side" *ngIf="showImageSide">
             <img [src]="getImagePath()" alt="status-icon" class="status-img">
           </div>
         </div>
@@ -42,6 +42,7 @@ export class ModalComponent {
   @Input() showFooter = true;
   @Input() showCancelButton = true;
   @Input() showConfirmButton = true;
+  @Input() showImageSide = true;
   @Input() cancelText = 'Cancelar';
   @Input() confirmText = 'Confirmar';
 

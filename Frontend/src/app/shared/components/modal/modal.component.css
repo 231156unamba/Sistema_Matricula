@@ -92,6 +92,16 @@
   position: relative;
 }
 
+.no-image-side .modal-info-side {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.no-image-side .modal-info-side::after {
+  display: none;
+}
+
 .modal-info-side::after {
   content: '';
   position: absolute;
