@@ -5,6 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Estudiante } from '../../core/models/estudiante.model';
 import { EstudianteService } from '../../core/services/estudiante.service';
 import { ModalService } from '../../shared/services/modal.service';
+import { RecursoService } from '../../core/services/recurso.service';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -27,12 +28,19 @@ export class RegularDashboardComponent implements OnInit {
   resumen: ResumenAcademico | null = null;
   loading = true;
   showHorarioModal = false;
+  showMallaModal = false;
+  showReglamentoModal = false;
+
   horarioUrl: SafeResourceUrl | null = null;
+  mallaUrl: SafeResourceUrl | null = null;
+  reglamentoUrl: SafeResourceUrl | null = null;
+
   imageError = false;
+  mallaError = false;
+  reglamentoError = false;
 
   menu = [
     { label: 'Historial', icon: 'bi-clock-history' },
-    { label: 'Encuesta', icon: 'bi-ui-checks-grid' },
     { label: 'Matrícula', icon: 'bi-journal-check' },
     { label: 'Reglamento', icon: 'bi-book' },
     { label: 'Malla curricular', icon: 'bi-diagram-3' },
@@ -42,6 +50,7 @@ export class RegularDashboardComponent implements OnInit {
   constructor(
     private estudianteService: EstudianteService,
     private modalService: ModalService,
+    private recursoService: RecursoService,
     private router: Router,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
@@ -118,6 +127,10 @@ export class RegularDashboardComponent implements OnInit {
       this.verHorario();
     } else if (label === 'Matrícula') {
       this.router.navigate(['/login-matricula-regular']);
+    } else if (label === 'Malla curricular') {
+      this.cargarMalla();
+    } else if (label === 'Reglamento') {
+      this.cargarReglamento();
     } else {
       // Otros menús no implementados aún o con otra lógica
       console.log('Menú clickeado:', label);
@@ -131,22 +144,44 @@ export class RegularDashboardComponent implements OnInit {
     }
 
     this.imageError = false;
-    // Normalizar el nombre de la carrera para el archivo (ej: "Ingeniería de Sistemas" -> "ingenieria_de_sistemas.pdf")
-    const carreraNormalizada = this.estudiante.carrera
+    const carreraNormalizada = this.normalizarTexto(this.estudiante.carrera);
+    const url = `http://localhost:8080/horarios/${carreraNormalizada}.pdf`;
+    this.horarioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.showHorarioModal = true;
+  }
+
+  cargarMalla() {
+    if (!this.estudiante?.carrera) {
+      this.modalService.showError('Malla', 'No se encontró información de tu carrera.');
+      return;
+    }
+    this.mallaError = false;
+    const carreraNormalizada = this.normalizarTexto(this.estudiante.carrera);
+    const url = `http://localhost:8080/mallas/${carreraNormalizada}.pdf`;
+    this.mallaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.showMallaModal = true;
+  }
+
+  cargarReglamento() {
+    this.reglamentoError = false;
+    const url = `http://localhost:8080/reglamento/reglamento_general.pdf`;
+    this.reglamentoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.showReglamentoModal = true;
+  }
+
+  private normalizarTexto(texto: string): string {
+    return texto
       .toLowerCase()
       .trim()
       .replace(/\s+/g, '_')
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, ""); // Quitar tildes
-
-    const url = `http://localhost:8080/horarios/${carreraNormalizada}.pdf`;
-    this.horarioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.showHorarioModal = true;
-   }
+  }
  
    onPdfError(event: any): void {
      this.imageError = true;
      console.error('No se pudo cargar el PDF del horario:', this.horarioUrl);
+     this.cdr.detectChanges();
    }
 
   get nombreCompleto(): string {
@@ -167,6 +202,15 @@ export class RegularDashboardComponent implements OnInit {
       if (!Number.isNaN(d.getTime())) return String(d.getFullYear());
     }
     return '—';
+  }
+
+  logout() {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('estudiante');
+      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('matricula_voucher');
+    }
+    this.router.navigate(['/inicio']);
   }
 }
 

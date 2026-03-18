@@ -50,6 +50,7 @@ com\unamba\matriculas\model\Pago.class
 com\unamba\matriculas\config\SecurityConfig.class
 com\unamba\matriculas\repository\PrerrequisitoRepository.class
 com\unamba\matriculas\dto\MatriculaResponse.class
+com\unamba\matriculas\controller\RecursoController.class
 com\unamba\matriculas\model\Matricula$TipoMatricula.class
 com\unamba\matriculas\config\DatabaseConfig.class
 com\unamba\matriculas\repository\PeriodoAcademicoRepository.class

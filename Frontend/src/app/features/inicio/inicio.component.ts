@@ -63,12 +63,8 @@ export class InicioComponent implements OnInit {
       if (esIngresante) {
         this.router.navigate(['/login-ingresante']);
       } else {
-        // Si ya está logueado como regular, enviarlo directo a validación de matrícula
-        if (this.authService.isLoggedIn() && this.authService.isRegularStudent()) {
-          this.router.navigate(['/login-matricula-regular']);
-        } else {
-          this.router.navigate(['/login-regular']);
-        }
+        // Enviar directamente a la validación de matrícula (DNI + Voucher)
+        this.router.navigate(['/login-matricula-regular']);
       }
     });
   }

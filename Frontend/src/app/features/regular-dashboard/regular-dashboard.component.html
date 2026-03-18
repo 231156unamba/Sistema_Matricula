@@ -13,6 +13,13 @@
         <i class="bi" [class]="item.icon"></i>
         <span>{{ item.label }}</span>
       </button>
+      
+      <div class="sidebar-footer mt-auto pt-4">
+        <button class="nav-btn text-danger" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
     </nav>
   </aside>
 
@@ -111,7 +118,51 @@
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
         No se pudo cargar el horario para la carrera: {{ estudiante?.carrera }}
         <br>
-        <small>Archivo esperado: .pdf</small>
+        <small>El administrador aún no ha subido el archivo correspondiente.</small>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Modal de Malla Curricular -->
+  <app-modal 
+    [isOpen]="showMallaModal" 
+    [title]="'Malla Curricular - ' + (estudiante?.carrera || '')"
+    type="info"
+    [showFooter]="true"
+    confirmText="Cerrar"
+    [showCancelButton]="false"
+    (onClose)="showMallaModal = false"
+    (onConfirm)="showMallaModal = false">
+    
+    <div class="horario-container">
+      <iframe *ngIf="mallaUrl && !mallaError" [src]="mallaUrl" class="horario-pdf"></iframe>
+      <div class="horario-error-msg" *ngIf="mallaError">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        No se pudo cargar la malla curricular para la carrera: {{ estudiante?.carrera }}
+        <br>
+        <small>El administrador aún no ha subido el archivo correspondiente.</small>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Modal de Reglamento -->
+  <app-modal 
+    [isOpen]="showReglamentoModal" 
+    [title]="'Reglamento General de Estudiantes'"
+    type="info"
+    [showFooter]="true"
+    confirmText="Cerrar"
+    [showCancelButton]="false"
+    (onClose)="showReglamentoModal = false"
+    (onConfirm)="showReglamentoModal = false">
+    
+    <div class="horario-container">
+      <iframe *ngIf="reglamentoUrl && !reglamentoError" [src]="reglamentoUrl" class="horario-pdf"></iframe>
+      <div class="horario-error-msg" *ngIf="reglamentoError">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        No se pudo cargar el reglamento general.
+        <br>
+        <small>El administrador aún no ha subido el archivo correspondiente.</small>
       </div>
     </div>
   </app-modal>

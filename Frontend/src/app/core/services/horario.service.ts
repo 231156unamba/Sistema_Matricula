@@ -23,4 +23,8 @@ export class HorarioService {
       responseType: 'text'
     });
   }
+
+  saveHorario(carrera: string, url: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/save`, { carrera, url });
+  }
 }

@@ -43,19 +43,26 @@ export class SeleccionarCursosComponent implements OnInit {
   }
 
   cargarCursos() {
-    if (!this.estudiante?.idEstudiante) return;
+    if (!this.estudiante?.idEstudiante) {
+      console.warn('CargarCursos: No hay ID de estudiante');
+      return;
+    }
 
+    console.log('Iniciando carga de cursos para estudiante:', this.estudiante.idEstudiante);
     this.loading = true;
     this.cdr.detectChanges();
 
     this.matriculaService.obtenerCursosDisponibles(this.estudiante.idEstudiante)
       .subscribe({
         next: (cursos) => {
+          console.log('Cursos recibidos del servidor:', cursos);
           this.ngZone.run(() => {
-            console.log('Cursos recibidos:', cursos);
             this.cursosDisponibles = cursos || [];
             this.loading = false;
+            // Forzar detección de cambios después de actualizar el estado
+            this.cdr.markForCheck();
             this.cdr.detectChanges();
+            console.log('Estado actualizado: loading=false, cursos count=', this.cursosDisponibles.length);
           });
         },
         error: (err) => {
@@ -144,5 +151,14 @@ export class SeleccionarCursosComponent implements OnInit {
           });
         }
       });
+  }
+
+  logout() {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('estudiante');
+      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('matricula_voucher');
+    }
+    this.router.navigate(['/inicio']);
   }
 }

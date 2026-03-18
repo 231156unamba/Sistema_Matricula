@@ -5,17 +5,22 @@
         <h1 class="page-title">Selección de Cursos</h1>
         <p class="page-subtitle">Periodo Académico 2024-I</p>
       </div>
-      <div class="creditos-summary">
-        <div class="creditos-box" [class.warning]="totalCreditos > creditosMaximos * 0.8">
-          <span class="label">Créditos Seleccionados</span>
-          <span class="value">{{ totalCreditos }} / {{ creditosMaximos }}</span>
+      <div class="d-flex align-items-center gap-3">
+        <div class="creditos-summary">
+          <div class="creditos-box" [class.warning]="totalCreditos > creditosMaximos * 0.8">
+            <span class="label">Créditos Seleccionados</span>
+            <span class="value">{{ totalCreditos }} / {{ creditosMaximos }}</span>
+          </div>
         </div>
+        <button class="btn btn-outline-danger btn-sm rounded-3 px-3 py-2" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+        </button>
       </div>
     </div>
 
     <div class="row g-4" *ngIf="!loading; else spinner">
       <!-- Lista de Cursos -->
-      <div class="col-lg-8">
+      <div class="col-lg-8" *ngIf="cursosDisponibles.length > 0; else noCursos">
         <div class="card shadow-sm border-0 rounded-4">
           <div class="card-body p-0">
             <div class="table-responsive">
@@ -47,20 +52,23 @@
                       </button>
                     </td>
                   </tr>
-                  <tr *ngIf="cursosDisponibles.length === 0">
-                    <td colspan="5" class="text-center py-5">
-                      <div class="text-muted">
-                        <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
-                        No hay cursos disponibles para tu matrícula actual.
-                      </div>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
       </div>
+
+      <ng-template #noCursos>
+        <div class="col-lg-8">
+          <div class="card shadow-sm border-0 rounded-4 py-5 text-center">
+            <div class="text-muted">
+              <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
+              No hay cursos disponibles para tu matrícula actual.
+            </div>
+          </div>
+        </div>
+      </ng-template>
 
       <!-- Resumen y Confirmación -->
       <div class="col-lg-4">

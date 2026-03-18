@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ import { finalize } from 'rxjs';
   templateUrl: './login-matricula-regular.component.html',
   styleUrls: ['./login-matricula-regular.component.css']
 })
-export class LoginMatriculaRegularComponent {
+export class LoginMatriculaRegularComponent implements OnInit {
   dni = '';
   voucher = '';
   loading = false;
@@ -23,6 +23,13 @@ export class LoginMatriculaRegularComponent {
     private router: Router,
     private modalService: ModalService
   ) {}
+
+  ngOnInit(): void {
+    const sesion = this.authService.obtenerSesion();
+    if (sesion && sesion.dni) {
+      this.dni = sesion.dni;
+    }
+  }
 
   onSubmit() {
     if (!this.dni || !this.voucher) {

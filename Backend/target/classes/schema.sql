@@ -106,6 +106,27 @@ CREATE TABLE administradores (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE mallas_curriculares (
+    id_malla BIGINT AUTO_INCREMENT PRIMARY KEY,
+    carrera VARCHAR(100) NOT NULL UNIQUE,
+    url_pdf VARCHAR(255) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE reglamento (
+    id_reglamento BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) DEFAULT 'REGLAMENTO GENERAL',
+    url_pdf VARCHAR(255) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE horarios_carrera (
+    id_horario BIGINT AUTO_INCREMENT PRIMARY KEY,
+    carrera VARCHAR(100) NOT NULL UNIQUE,
+    url_pdf VARCHAR(255) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Administradores (password: admin123 para todos)
 INSERT INTO administradores (usuario, password, nombres, apellidos, email, rol) VALUES
 ('admin', 'admin123', 'Carlos', 'Rodríguez', 'admin@unamba.edu.pe', 'SUPER_ADMIN'),

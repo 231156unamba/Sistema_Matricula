@@ -195,7 +195,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" [class.active]="isActiveRoute('/login-regular')" [routerLink]="(isLoggedIn() && isRegularStudent()) ? '/login-matricula-regular' : '/login-regular'">
+            <a class="nav-link" [class.active]="isActiveRoute('/login-regular')" [routerLink]="(isLoggedIn() && isRegularStudent()) ? '/regular' : '/login-regular'">
               <i class="bi bi-backpack me-2"></i>Regulares
             </a>
           </li>
@@ -204,8 +204,8 @@
               <i class="bi bi-shield-lock me-2"></i>Administración
             </a>
           </li>
-          <li class="nav-item" *ngIf="currentUser">
-            <a class="nav-link" (click)="logout()" style="cursor: pointer;">
+          <li class="nav-item" *ngIf="isLoggedIn()">
+            <a class="nav-link text-danger" (click)="logout()" style="cursor: pointer;">
               <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
             </a>
           </li>
