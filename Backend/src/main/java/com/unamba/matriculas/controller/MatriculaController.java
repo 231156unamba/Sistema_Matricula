@@ -11,12 +11,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.unamba.matriculas.model.Curso;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/matriculas")
 @RequiredArgsConstructor
 public class MatriculaController {
     
     private final MatriculaService matriculaService;
+    
+    @GetMapping("/cursos-disponibles/{idEstudiante}")
+    public ResponseEntity<List<Curso>> obtenerCursosDisponibles(@PathVariable Long idEstudiante) {
+        try {
+            return ResponseEntity.ok(matriculaService.obtenerCursosDisponibles(idEstudiante));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
     
     @PostMapping("/ingresante")
     public ResponseEntity<MatriculaResponse> matricularIngresante(@Valid @RequestBody MatriculaIngresanteRequest request) {

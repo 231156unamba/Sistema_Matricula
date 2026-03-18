@@ -65,11 +65,18 @@ export class GlobalModalComponent implements OnInit, OnDestroy {
   }
 
   closeModal(): void {
-    this.modalService.hide();
+    if (this.modalOptions?.type === 'confirmation') {
+      this.modalService.confirm(false);
+    } else {
+      this.modalService.hide();
+    }
   }
 
   confirmModal(): void {
-    // El componente específico manejará la confirmación
-    this.modalService.hide();
+    if (this.modalOptions?.type === 'confirmation') {
+      this.modalService.confirm(true);
+    } else {
+      this.modalService.hide();
+    }
   }
 }

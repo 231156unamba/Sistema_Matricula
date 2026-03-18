@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AnuncioService } from '../../core/services/anuncio.service';
 import { ModalService } from '../../shared/services/modal.service';
 
@@ -17,31 +18,35 @@ export class InicioComponent implements OnInit {
   constructor(
     private anuncioService: AnuncioService,
     private modalService: ModalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit() {
-    // Evitar llamadas HTTP en el servidor (SSR) que pueden quedar colgadas
-    if (typeof window === 'undefined') {
-      this.loading = false;
-      return;
-    }
     this.cargarAnuncios();
   }
 
   cargarAnuncios() {
+    // Evitar llamadas HTTP en el servidor (SSR) si es necesario, 
+    // pero para anuncios queremos que carguen de inmediato.
+    // Si loading se queda en true, es porque la petición no termina o el cambio no se detecta.
     this.loading = true;
     this.anuncioService.obtenerActivos().subscribe({
       next: (data) => {
         this.anuncios = data || [];
         this.loading = false;
-        this.cdr.detectChanges();
+        // Forzamos la detección de cambios para que la UI se actualice inmediatamente
+        if (typeof window !== 'undefined') {
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Error al cargar anuncios', error);
         this.anuncios = [];
         this.loading = false;
-        this.cdr.detectChanges();
+        if (typeof window !== 'undefined') {
+          this.cdr.detectChanges();
+        }
       }
     });
   }
@@ -52,7 +57,13 @@ export class InicioComponent implements OnInit {
       'Selecciona si eres ingresante o alumno regular para continuar con tu matrícula.',
       'Ingresante',
       'Regular'
-    );
+    ).subscribe((esIngresante: boolean) => {
+      if (esIngresante) {
+        this.router.navigate(['/login-ingresante']);
+      } else {
+        this.router.navigate(['/login-regular']);
+      }
+    });
   }
 
   getTipoClass(tipo: string): string {

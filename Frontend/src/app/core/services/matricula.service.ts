@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Matricula, MatriculaIngresanteRequest, MatriculaRequest, MatriculaResponse } from '../models';
+
+export interface Curso {
+  idCurso: number;
+  codigoCurso: string;
+  nombre: string;
+  creditos: number;
+  semestre: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,27 +18,11 @@ export class MatriculaService {
 
   constructor(private http: HttpClient) { }
 
-  matricularIngresante(data: MatriculaIngresanteRequest): Observable<MatriculaResponse> {
-    return this.http.post<MatriculaResponse>(`${this.apiUrl}/ingresante`, data);
+  obtenerCursosDisponibles(idEstudiante: number): Observable<Curso[]> {
+    return this.http.get<Curso[]>(`${this.apiUrl}/cursos-disponibles/${idEstudiante}`);
   }
 
-  matricularRegular(data: MatriculaRequest): Observable<MatriculaResponse> {
-    return this.http.post<MatriculaResponse>(`${this.apiUrl}/regular`, data);
-  }
-
-  obtenerTodos(): Observable<Matricula[]> {
-    return this.http.get<Matricula[]>(this.apiUrl);
-  }
-
-  obtenerPorId(id: number): Observable<Matricula> {
-    return this.http.get<Matricula>(`${this.apiUrl}/${id}`);
-  }
-
-  obtenerPorEstudiante(idEstudiante: number): Observable<Matricula[]> {
-    return this.http.get<Matricula[]>(`${this.apiUrl}/estudiante/${idEstudiante}`);
-  }
-
-  obtenerPorPeriodo(idPeriodo: number): Observable<Matricula[]> {
-    return this.http.get<Matricula[]>(`${this.apiUrl}/periodo/${idPeriodo}`);
+  registrarMatricula(request: { idEstudiante: number, idCursos: number[], voucher: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/regular`, request);
   }
 }

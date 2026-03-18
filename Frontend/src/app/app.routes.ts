@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login-regular/login-regular.component').then(m => m.LoginRegularComponent)
   },
   { 
+    path: 'login-matricula-regular', 
+    loadComponent: () => import('./features/login-matricula-regular/login-matricula-regular.component').then(m => m.LoginMatriculaRegularComponent)
+  },
+  { 
     path: 'matricula-ingresante', 
     loadComponent: () => import('./features/ingresante/registro.component').then(m => m.RegistroComponent)
   },
@@ -37,6 +41,10 @@ export const routes: Routes = [
   { 
     path: 'admin', 
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent)
+  },
+  {
+    path: 'admin/dashboard',
+    loadComponent: () => import('./features/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
   },
   { 
     path: '**', 

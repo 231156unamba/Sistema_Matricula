@@ -1,4 +1,111 @@
-<div class="cursos-container">
-  <h2>Seleccionar Cursos</h2>
-  <!-- TODO: Agregar lista de cursos disponibles -->
+<div class="matricula-shell">
+  <div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="page-title">Selección de Cursos</h1>
+        <p class="page-subtitle">Periodo Académico 2024-I</p>
+      </div>
+      <div class="creditos-summary">
+        <div class="creditos-box" [class.warning]="totalCreditos > creditosMaximos * 0.8">
+          <span class="label">Créditos Seleccionados</span>
+          <span class="value">{{ totalCreditos }} / {{ creditosMaximos }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Lista de Cursos -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary">
+                  <tr>
+                    <th class="ps-4">Código</th>
+                    <th>Curso</th>
+                    <th>Créditos</th>
+                    <th>Semestre</th>
+                    <th class="text-center pe-4">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let curso of cursosDisponibles" [class.table-active]="isCursoSeleccionado(curso.idCurso)">
+                    <td class="ps-4 fw-bold">{{ curso.codigoCurso }}</td>
+                    <td>{{ curso.nombre }}</td>
+                    <td>{{ curso.creditos }}</td>
+                    <td>{{ curso.semestre }}°</td>
+                    <td class="text-center pe-4">
+                      <button 
+                        class="btn-select" 
+                        [class.selected]="isCursoSeleccionado(curso.idCurso)"
+                        (click)="toggleCurso(curso)">
+                        {{ isCursoSeleccionado(curso.idCurso) ? 'Quitar' : 'Seleccionar' }}
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="cursosDisponibles.length === 0 && !loading">
+                    <td colspan="5" class="text-center py-5">
+                      <div class="text-muted">
+                        <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
+                        No hay cursos disponibles para tu matrícula actual.
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="loading">
+                    <td colspan="5" class="text-center py-5">
+                      <div class="spinner-border text-primary" role="status"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen y Confirmación -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 2rem;">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-4 fw-bold">Resumen de Matrícula</h3>
+            
+            <div class="selected-list mb-4">
+              <div class="selected-item d-flex justify-content-between align-items-center" *ngFor="let curso of cursosSeleccionados">
+                <div>
+                  <div class="item-name">{{ curso.nombre }}</div>
+                  <div class="item-meta">{{ curso.codigoCurso }} • {{ curso.creditos }} cr.</div>
+                </div>
+                <button class="btn-remove" (click)="toggleCurso(curso)"><i class="bi bi-x"></i></button>
+              </div>
+              <div class="text-muted text-center py-3" *ngIf="cursosSeleccionados.length === 0">
+                No has seleccionado cursos aún.
+              </div>
+            </div>
+
+            <div class="divider mb-3"></div>
+            
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-secondary">Total Cursos</span>
+              <span class="fw-bold">{{ cursosSeleccionados.length }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-4">
+              <span class="text-secondary">Total Créditos</span>
+              <span class="fw-bold" [class.text-danger]="totalCreditos > creditosMaximos">{{ totalCreditos }}</span>
+            </div>
+
+            <button 
+              class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm"
+              [disabled]="cursosSeleccionados.length === 0 || loading"
+              (click)="confirmarMatricula()">
+              Finalizar Matrícula
+            </button>
+            <button class="btn btn-link w-100 mt-2 text-secondary text-decoration-none" routerLink="/regular">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

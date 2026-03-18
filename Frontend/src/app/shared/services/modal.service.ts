@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 
 export interface ModalOptions {
   title: string;
@@ -16,6 +16,7 @@ export interface ModalOptions {
 export class ModalService {
   private modalSubject = new Subject<ModalOptions | null>();
   public modal$ = this.modalSubject.asObservable();
+  private confirmationSubject = new Subject<boolean>();
 
   show(options: ModalOptions): void {
     this.modalSubject.next(options);
@@ -66,7 +67,7 @@ export class ModalService {
     message?: string, 
     confirmText: string = 'Confirmar',
     cancelText: string = 'Cancelar'
-  ): void {
+  ): Observable<boolean> {
     this.show({
       title,
       message,
@@ -75,6 +76,12 @@ export class ModalService {
       confirmText,
       cancelText
     });
+    return this.confirmationSubject.asObservable();
+  }
+
+  confirm(result: boolean): void {
+    this.confirmationSubject.next(result);
+    this.hide();
   }
 
   hide(): void {

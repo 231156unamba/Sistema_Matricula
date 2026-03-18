@@ -25,6 +25,13 @@ export class AuthService {
     });
   }
 
+  loginMatriculaRegular(dni: string, voucher: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login/matricula-regular`, {
+      identificador: dni,
+      voucher: voucher
+    });
+  }
+
   guardarSesion(response: AuthResponse) {
     if (response.estudiante) {
       localStorage.setItem('estudiante', JSON.stringify(response.estudiante));

@@ -51,6 +51,21 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null));
         }
     }
+
+    @PostMapping("/login/matricula-regular")
+    public ResponseEntity<LoginResponse> loginMatriculaRegular(@Valid @RequestBody LoginRequest request) {
+        try {
+            AuthResult authResult = authService.loginMatriculaRegular(
+                request.getIdentificador(), 
+                request.getVoucher()
+            );
+            Estudiante estudiante = (Estudiante) authResult.getUser();
+            
+            return ResponseEntity.ok(new LoginResponse(true, "Validación de matrícula exitosa", estudiante, authResult.getToken()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null));
+        }
+    }
     
     static class LoginResponse {
         private boolean success;

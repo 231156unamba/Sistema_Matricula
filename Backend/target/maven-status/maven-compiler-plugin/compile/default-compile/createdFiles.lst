@@ -34,6 +34,7 @@ com\unamba\matriculas\repository\MatriculaRepository.class
 com\unamba\matriculas\model\Estudiante.class
 com\unamba\matriculas\model\Prerrequisito.class
 com\unamba\matriculas\service\KeycloakSyncService.class
+com\unamba\matriculas\controller\HorarioController.class
 com\unamba\matriculas\controller\EstudianteController.class
 com\unamba\matriculas\controller\AuthController$LoginResponse.class
 com\unamba\matriculas\model\Pago$TipoPago.class

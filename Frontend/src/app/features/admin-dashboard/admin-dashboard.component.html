@@ -1,0 +1,69 @@
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-shield-lock"></i></div>
+      <div>
+        <div class="brand-title">Administración</div>
+        <div class="brand-subtitle">Panel de Control</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active">
+        <i class="bi bi-calendar-week"></i>
+        <span>Horarios</span>
+      </button>
+      <button class="nav-btn" routerLink="/inicio">
+        <i class="bi bi-house"></i>
+        <span>Inicio</span>
+      </button>
+      <button class="nav-btn logout-btn" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="admin-content">
+    <div class="content-header">
+      <h1 class="welcome-title">Gestión de Horarios</h1>
+      <p class="welcome-subtitle">Sube y actualiza los horarios oficiales de cada carrera.</p>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="upload-section">
+        <div class="form-group mb-4">
+          <label for="carrera-select" class="form-label">Carrera Universitaria</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
+            <select id="carrera-select" class="form-select" [(ngModel)]="selectedCarrera">
+              <option *ngFor="let carrera of carreras" [value]="carrera">{{ carrera }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="horario-upload" class="form-label">Archivo de Horario (PDF)</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-file-earmark-pdf"></i></span>
+            <input type="file" id="horario-upload" class="form-control" accept=".pdf" (change)="onFileSelected($event)">
+          </div>
+          <small class="text-muted mt-1 d-block" *ngIf="selectedFile">
+            Archivo seleccionado: {{ selectedFile.name }}
+          </small>
+        </div>
+
+        <div class="mt-4">
+          <button class="btn btn-premium w-100" (click)="onUpload()" [disabled]="loading || !selectedFile">
+            <span *ngIf="!loading">
+              <i class="bi bi-cloud-upload me-2"></i>Actualizar Horario
+            </span>
+            <span *ngIf="loading">
+              <span class="spinner-border spinner-border-sm me-2"></span>Subiendo...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

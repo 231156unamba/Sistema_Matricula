@@ -1,0 +1,52 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Validación de Matrícula</h2>
+      <p>Ingresa con tu DNI y voucher de pago de matrícula</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="dni">DNI</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+          <input 
+            type="text" 
+            id="dni" 
+            class="form-control" 
+            [(ngModel)]="dni" 
+            name="dni"
+            placeholder="Ingrese su DNI"
+            maxlength="8"
+            required
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="voucher">Voucher de Pago</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-receipt"></i></span>
+          <input 
+            type="text" 
+            id="voucher" 
+            class="form-control" 
+            [(ngModel)]="voucher" 
+            name="voucher"
+            placeholder="Ingrese el número de voucher"
+            required
+          />
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        <span *ngIf="!loading">Validar y Continuar</span>
+        <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+      </button>
+    </form>
+    
+    <div class="login-footer">
+      <p><a routerLink="/regular">Volver al panel</a></p>
+    </div>
+  </div>
+</div>

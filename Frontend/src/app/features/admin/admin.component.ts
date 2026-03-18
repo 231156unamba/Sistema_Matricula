@@ -39,7 +39,7 @@ export class AdminComponent {
       if (this.usuario === 'admin' && this.password === 'admin123') {
         this.showModal('Éxito', 'Acceso administrativo concedido', 'success');
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/admin/dashboard']);
         }, 1500);
       } else {
         this.showModal('Error', 'Credenciales incorrectas', 'error');

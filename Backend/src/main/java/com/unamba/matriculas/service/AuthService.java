@@ -3,7 +3,9 @@ package com.unamba.matriculas.service;
 import com.unamba.matriculas.dto.AuthResult;
 import com.unamba.matriculas.model.Administrador;
 import com.unamba.matriculas.model.Estudiante;
+import com.unamba.matriculas.model.Pago; // <--- IMPORTACIÓN CORREGIDA
 import com.unamba.matriculas.repository.EstudianteRepository;
+import com.unamba.matriculas.repository.PagoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ import java.util.Optional;
  * - 231156: Ingresó en el año 2023, semestre 2023-1 (primera mitad), número 1156
  * - 222115: Ingresó en el año 2022, semestre 2022-2 (segunda mitad), número 2115
  */
+import com.unamba.matriculas.repository.PagoRepository;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -30,6 +34,7 @@ public class AuthService {
     // o simplemente mantenemos la estructura que devuelve el Estudiante.
     private final EstudianteRepository estudianteRepository;
     private final KeycloakIntegrationService keycloakIntegrationService;
+    private final PagoRepository pagoRepository;
     
     public AuthResult loginIngresante(String dni, String voucher) throws Exception {
         // En keycloak, el username para la bd es el dni.
@@ -45,6 +50,29 @@ public class AuthService {
         } else {
             throw new Exception("Tipo de persona incorrecto para este login.");
         }
+    }
+
+    public AuthResult loginMatriculaRegular(String dni, String voucher) throws Exception {
+        // Buscamos al estudiante por DNI
+        Estudiante estudiante = estudianteRepository.findByDni(dni)
+            .orElseThrow(() -> new Exception("Estudiante no encontrado con el DNI proporcionado."));
+
+        if (estudiante.getTipo() != Estudiante.TipoEstudiante.REGULAR) {
+            throw new Exception("El estudiante no es de tipo REGULAR.");
+        }
+
+        if (estudiante.getEstado() != Estudiante.EstadoEstudiante.ACTIVO) {
+            throw new Exception("El estudiante no está activo.");
+        }
+
+        // Validamos el pago de matrícula con el voucher
+        pagoRepository.findByVoucherAndValidadoTrue(voucher)
+            .filter(pago -> pago.getEstudiante().getIdEstudiante().equals(estudiante.getIdEstudiante()))
+            .filter(pago -> Pago.TipoPago.MATRICULA.equals(pago.getTipoPago()))
+            .orElseThrow(() -> new Exception("Voucher de matrícula no válido o no pertenece al estudiante."));
+
+        // Si todo es correcto, devolvemos un AuthResult usando el constructor existente
+        return new AuthResult(estudiante, "ESTUDIANTE", "TOKEN-VALIDACION-MATRICULA");
     }
     
     public AuthResult loginRegular(String dni, String codigoEstudiante) throws Exception {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -43,7 +43,8 @@ export class RegularDashboardComponent implements OnInit {
     private estudianteService: EstudianteService,
     private modalService: ModalService,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -88,6 +89,9 @@ export class RegularDashboardComponent implements OnInit {
       finalize(() => { 
         console.log('Finalizando loading. Estudiante:', this.estudiante, 'Resumen:', this.resumen);
         this.loading = false; 
+        if (typeof window !== 'undefined') {
+          this.cdr.detectChanges();
+        }
       })
     ).subscribe({
       next: (result) => {
@@ -95,10 +99,16 @@ export class RegularDashboardComponent implements OnInit {
         this.estudiante = result.estudiante;
         this.resumen = result.resumen as ResumenAcademico;
         console.log('Después de asignar - Estudiante:', this.estudiante, 'Resumen:', this.resumen);
+        if (typeof window !== 'undefined') {
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Error cargando datos:', error);
         // Si falla, al menos mostramos la data de sesión que ya tenemos
+        if (typeof window !== 'undefined') {
+          this.cdr.detectChanges();
+        }
       }
     });
   }
@@ -106,6 +116,8 @@ export class RegularDashboardComponent implements OnInit {
   onMenuClick(label: string): void {
     if (label === 'Horario') {
       this.verHorario();
+    } else if (label === 'Matrícula') {
+      this.router.navigate(['/login-matricula-regular']);
     } else {
       // Otros menús no implementados aún o con otra lógica
       console.log('Menú clickeado:', label);

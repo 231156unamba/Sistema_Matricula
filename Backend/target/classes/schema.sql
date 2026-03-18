@@ -3,7 +3,7 @@
 -- H2 ya crea la base de datos automáticamente
 
 CREATE TABLE estudiantes (
-    id_estudiante INT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante BIGINT AUTO_INCREMENT PRIMARY KEY,
     codigo_estudiante VARCHAR(20) UNIQUE,
     dni VARCHAR(8) NOT NULL,
     nombres VARCHAR(100) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE estudiantes (
 );
 
 CREATE TABLE cursos (
-    id_curso INT AUTO_INCREMENT PRIMARY KEY,
+    id_curso BIGINT AUTO_INCREMENT PRIMARY KEY,
     codigo_curso VARCHAR(10) UNIQUE NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     creditos INT NOT NULL,
@@ -24,24 +24,24 @@ CREATE TABLE cursos (
 );
 
 CREATE TABLE prerrequisitos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_curso INT,
-    id_curso_prerrequisito INT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_curso BIGINT,
+    id_curso_prerrequisito BIGINT,
     FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
     FOREIGN KEY (id_curso_prerrequisito) REFERENCES cursos(id_curso)
 );
 
 CREATE TABLE periodos_academicos (
-    id_periodo INT AUTO_INCREMENT PRIMARY KEY,
+    id_periodo BIGINT AUTO_INCREMENT PRIMARY KEY,
     anio INT NOT NULL,
     semestre VARCHAR(10) NOT NULL CHECK (semestre IN ('I','II')),
     estado VARCHAR(20) DEFAULT 'ABIERTO' CHECK (estado IN ('ABIERTO','CERRADO'))
 );
 
 CREATE TABLE matriculas (
-    id_matricula INT AUTO_INCREMENT PRIMARY KEY,
-    id_estudiante INT,
-    id_periodo INT,
+    id_matricula BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante BIGINT,
+    id_periodo BIGINT,
     tipo VARCHAR(20) CHECK (tipo IN ('INGRESANTE','REGULAR')),
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante),
@@ -49,9 +49,9 @@ CREATE TABLE matriculas (
 );
 
 CREATE TABLE detalle_matricula (
-    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
-    id_matricula INT,
-    id_curso INT,
+    id_detalle BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_matricula BIGINT,
+    id_curso BIGINT,
     veces_llevado INT DEFAULT 1,
     nota_final DECIMAL(4,2),
     estado VARCHAR(20) CHECK (estado IN ('EN_CURSO','APROBADO','DESAPROBADO')),
@@ -60,8 +60,8 @@ CREATE TABLE detalle_matricula (
 );
 
 CREATE TABLE documentos_ingresante (
-    id_documento INT AUTO_INCREMENT PRIMARY KEY,
-    id_estudiante INT,
+    id_documento BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante BIGINT,
     declaracion_jurada VARCHAR(255),
     certificado_estudios VARCHAR(255),
     boleta_matricula VARCHAR(255),
@@ -73,8 +73,8 @@ CREATE TABLE documentos_ingresante (
 );
 
 CREATE TABLE pagos (
-    id_pago INT AUTO_INCREMENT PRIMARY KEY,
-    id_estudiante INT,
+    id_pago BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_estudiante BIGINT,
     tipo_pago VARCHAR(20) CHECK (tipo_pago IN ('MATRICULA','EXAMEN','CENTRO_MEDICO')),
     voucher VARCHAR(50),
     monto DECIMAL(8,2),
@@ -84,7 +84,7 @@ CREATE TABLE pagos (
 );
 
 CREATE TABLE anuncios (
-    id_anuncio INT AUTO_INCREMENT PRIMARY KEY,
+    id_anuncio BIGINT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     contenido TEXT NOT NULL,
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('MATRICULA','EXAMEN','EVENTO','COMUNICADO','HORARIO')),
@@ -95,7 +95,7 @@ CREATE TABLE anuncios (
 );
 
 CREATE TABLE administradores (
-    id_admin INT AUTO_INCREMENT PRIMARY KEY,
+    id_admin BIGINT AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     nombres VARCHAR(100) NOT NULL,

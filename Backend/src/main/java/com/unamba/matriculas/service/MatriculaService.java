@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class MatriculaService {
@@ -23,6 +25,30 @@ public class MatriculaService {
     private final PagoRepository pagoRepository;
     private final DocumentoIngresanteRepository documentoRepository;
     
+    public List<Curso> obtenerCursosDisponibles(Long idEstudiante) throws Exception {
+        Estudiante estudiante = estudianteRepository.findById(idEstudiante)
+            .orElseThrow(() -> new Exception("Estudiante no encontrado"));
+        
+        List<Curso> todosLosCursos = cursoRepository.findAll();
+        List<DetalleMatricula> historial = detalleMatriculaRepository.findByEstudiante(idEstudiante);
+        
+        List<Long> cursosAprobadosIds = historial.stream()
+            .filter(d -> d.getEstado() == DetalleMatricula.EstadoCurso.APROBADO)
+            .map(d -> d.getCurso().getIdCurso())
+            .collect(Collectors.toList());
+            
+        List<Long> cursosEnCursoIds = historial.stream()
+            .filter(d -> d.getEstado() == DetalleMatricula.EstadoCurso.EN_CURSO)
+            .map(d -> d.getCurso().getIdCurso())
+            .collect(Collectors.toList());
+
+        return todosLosCursos.stream()
+            .filter(curso -> !cursosAprobadosIds.contains(curso.getIdCurso()))
+            .filter(curso -> !cursosEnCursoIds.contains(curso.getIdCurso()))
+            .filter(curso -> validarPrerrequisitos(idEstudiante, curso.getIdCurso()))
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public Matricula matricularIngresante(MatriculaIngresanteRequest request) throws Exception {
         pagoRepository.findByVoucherAndValidadoTrue(request.getVoucher())

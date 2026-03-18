@@ -14,4 +14,7 @@ public interface DetalleMatriculaRepository extends JpaRepository<DetalleMatricu
     
     @Query("SELECT d FROM DetalleMatricula d WHERE d.matricula.estudiante.idEstudiante = :idEstudiante AND d.estado = 'APROBADO'")
     List<DetalleMatricula> findCursosAprobadosByEstudiante(Long idEstudiante);
+
+    @Query("SELECT d FROM DetalleMatricula d WHERE d.matricula.estudiante.idEstudiante = :idEstudiante")
+    List<DetalleMatricula> findByEstudiante(@Param("idEstudiante") Long idEstudiante);
 }
