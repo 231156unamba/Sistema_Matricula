@@ -42,12 +42,25 @@ export class AuthService {
   }
 
   obtenerSesion() {
+    if (typeof localStorage === 'undefined') return null;
     const data = localStorage.getItem('estudiante');
     return data ? JSON.parse(data) : null;
   }
 
+  isLoggedIn(): boolean {
+    if (typeof localStorage === 'undefined') return false;
+    return !!localStorage.getItem('token');
+  }
+
+  isRegularStudent(): boolean {
+    const sesion = this.obtenerSesion();
+    return sesion && sesion.tipo === 'REGULAR';
+  }
+
   cerrarSesion() {
-    localStorage.removeItem('estudiante');
-    localStorage.removeItem('token');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('estudiante');
+      localStorage.removeItem('token');
+    }
   }
 }

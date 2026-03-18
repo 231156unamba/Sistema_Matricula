@@ -195,7 +195,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" [class.active]="isActiveRoute('/login-regular')" [routerLink]="'/login-regular'">
+            <a class="nav-link" [class.active]="isActiveRoute('/login-regular')" [routerLink]="(isLoggedIn() && isRegularStudent()) ? '/login-matricula-regular' : '/login-regular'">
               <i class="bi bi-backpack me-2"></i>Regulares
             </a>
           </li>

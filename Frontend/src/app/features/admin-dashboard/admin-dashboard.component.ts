@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -21,7 +21,8 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private horarioService: HorarioService,
     private modalService: ModalService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -30,6 +31,7 @@ export class AdminDashboardComponent implements OnInit {
       if (this.carreras.length > 0) {
         this.selectedCarrera = this.carreras[0];
       }
+      this.cdr.detectChanges();
     });
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ModalService } from './shared/services/modal.service';
+import { AuthService } from './core/services/auth.service';
 import { GlobalModalComponent } from './shared/components/global-modal/global-modal.component';
 
 @Component({
@@ -16,9 +17,18 @@ export class App {
   
   constructor(
     private router: Router,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private authService: AuthService
   ) {}
   
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  isRegularStudent(): boolean {
+    return this.authService.isRegularStudent();
+  }
+
   // Estado de la aplicación
   currentPage = 'inicio';
   currentUser = null;

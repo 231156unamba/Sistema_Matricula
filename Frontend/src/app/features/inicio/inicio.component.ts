@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AnuncioService } from '../../core/services/anuncio.service';
 import { ModalService } from '../../shared/services/modal.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-inicio',
@@ -19,7 +20,8 @@ export class InicioComponent implements OnInit {
     private anuncioService: AnuncioService,
     private modalService: ModalService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -61,7 +63,12 @@ export class InicioComponent implements OnInit {
       if (esIngresante) {
         this.router.navigate(['/login-ingresante']);
       } else {
-        this.router.navigate(['/login-regular']);
+        // Si ya está logueado como regular, enviarlo directo a validación de matrícula
+        if (this.authService.isLoggedIn() && this.authService.isRegularStudent()) {
+          this.router.navigate(['/login-matricula-regular']);
+        } else {
+          this.router.navigate(['/login-regular']);
+        }
       }
     });
   }

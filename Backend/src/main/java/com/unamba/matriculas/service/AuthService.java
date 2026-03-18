@@ -71,8 +71,9 @@ public class AuthService {
             .filter(pago -> Pago.TipoPago.MATRICULA.equals(pago.getTipoPago()))
             .orElseThrow(() -> new Exception("Voucher de matrícula no válido o no pertenece al estudiante."));
 
-        // Si todo es correcto, devolvemos un AuthResult usando el constructor existente
-        return new AuthResult(estudiante, "ESTUDIANTE", "TOKEN-VALIDACION-MATRICULA");
+        // Generamos un token real de Keycloak para que el frontend pueda llamar a otros endpoints (como cursos)
+        // El username es el DNI y el password para alumnos regulares es su código de estudiante.
+        return keycloakIntegrationService.login(dni, estudiante.getCodigoEstudiante());
     }
     
     public AuthResult loginRegular(String dni, String codigoEstudiante) throws Exception {

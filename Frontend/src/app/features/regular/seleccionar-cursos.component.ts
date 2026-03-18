@@ -1,15 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatriculaService, Curso } from '../../core/services/matricula.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../shared/services/modal.service';
-import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-seleccionar-cursos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './seleccionar-cursos.component.html',
   styleUrls: ['./seleccionar-cursos.component.css']
 })
@@ -17,49 +16,55 @@ export class SeleccionarCursosComponent implements OnInit {
   cursosDisponibles: Curso[] = [];
   cursosSeleccionados: Curso[] = [];
   estudiante: any = null;
-  loading = true;
+  loading = false;
   creditosMaximos = 23;
-  voucher = '';
 
   constructor(
     private matriculaService: MatriculaService,
     private authService: AuthService,
     private modalService: ModalService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
+    if (typeof window === 'undefined') return;
+
     const sesion = this.authService.obtenerSesion();
-    if (!sesion) {
+    if (!sesion || !sesion.idEstudiante) {
       this.router.navigate(['/login-regular']);
       return;
     }
     this.estudiante = sesion;
     this.creditosMaximos = this.estudiante.creditosMaximos || 23;
     
-    // El voucher se guardó en la sesión durante el login-matricula-regular
-    // Como el loginIngresante no devuelve el voucher, lo recuperamos del localStorage si lo guardamos o lo pedimos de nuevo
-    // Para simplificar, asumiremos que el voucher está disponible en un estado global o lo pedimos en el login previo
-    // En este flujo, el voucher fue validado en el paso anterior.
-    const raw = localStorage.getItem('estudiante');
-    if (raw) {
-      const data = JSON.parse(raw);
-      // Asumimos que el backend nos dio el estudiante validado.
-    }
-
     this.cargarCursos();
   }
 
   cargarCursos() {
+    if (!this.estudiante?.idEstudiante) return;
+
     this.loading = true;
+    this.cdr.detectChanges();
+
     this.matriculaService.obtenerCursosDisponibles(this.estudiante.idEstudiante)
-      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (cursos) => {
-          this.cursosDisponibles = cursos;
+          this.ngZone.run(() => {
+            console.log('Cursos recibidos:', cursos);
+            this.cursosDisponibles = cursos || [];
+            this.loading = false;
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.modalService.showError('Error', 'No se pudieron cargar los cursos disponibles.');
+          this.ngZone.run(() => {
+            console.error('Error al cargar cursos:', err);
+            this.loading = false;
+            this.modalService.showError('Error', 'No se pudieron cargar los cursos disponibles.');
+            this.cdr.detectChanges();
+          });
         }
       });
   }
@@ -75,6 +80,7 @@ export class SeleccionarCursosComponent implements OnInit {
       }
       this.cursosSeleccionados.push(curso);
     }
+    this.cdr.detectChanges();
   }
 
   isCursoSeleccionado(idCurso: number): boolean {
@@ -104,7 +110,6 @@ export class SeleccionarCursosComponent implements OnInit {
   }
 
   registrar() {
-    // Recuperar el voucher usado en el login previo
     const voucher = localStorage.getItem('matricula_voucher') || 'VCH-VALIDADO';
 
     const request = {
@@ -114,20 +119,29 @@ export class SeleccionarCursosComponent implements OnInit {
     };
 
     this.loading = true;
+    this.cdr.detectChanges();
+
     this.matriculaService.registrarMatricula(request)
-      .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (res) => {
-          if (res.success) {
-            localStorage.removeItem('matricula_voucher');
-            this.modalService.showSuccess('¡Éxito!', 'Tu matrícula ha sido registrada correctamente.');
-            setTimeout(() => this.router.navigate(['/regular']), 2000);
-          } else {
-            this.modalService.showError('Error', res.message);
-          }
+        next: (res: any) => {
+          this.ngZone.run(() => {
+            this.loading = false;
+            if (res.success) {
+              localStorage.removeItem('matricula_voucher');
+              this.modalService.showSuccess('¡Éxito!', 'Tu matrícula ha sido registrada correctamente.');
+              setTimeout(() => this.router.navigate(['/regular']), 2000);
+            } else {
+              this.modalService.showError('Error', res.message);
+            }
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.modalService.showError('Error', err.error?.message || 'Error al registrar la matrícula.');
+          this.ngZone.run(() => {
+            this.loading = false;
+            this.modalService.showError('Error', err.error?.message || 'Error al registrar la matrícula.');
+            this.cdr.detectChanges();
+          });
         }
       });
   }

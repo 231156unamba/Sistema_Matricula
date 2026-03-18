@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4" *ngIf="!loading; else spinner">
       <!-- Lista de Cursos -->
       <div class="col-lg-8">
         <div class="card shadow-sm border-0 rounded-4">
@@ -30,7 +30,10 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let curso of cursosDisponibles" [class.table-active]="isCursoSeleccionado(curso.idCurso)">
+                  <tr *ngFor="let curso of cursosDisponibles" 
+                      [class.table-active]="isCursoSeleccionado(curso.idCurso)"
+                      (click)="toggleCurso(curso)"
+                      style="cursor: pointer;">
                     <td class="ps-4 fw-bold">{{ curso.codigoCurso }}</td>
                     <td>{{ curso.nombre }}</td>
                     <td>{{ curso.creditos }}</td>
@@ -39,22 +42,17 @@
                       <button 
                         class="btn-select" 
                         [class.selected]="isCursoSeleccionado(curso.idCurso)"
-                        (click)="toggleCurso(curso)">
+                        (click)="$event.stopPropagation(); toggleCurso(curso)">
                         {{ isCursoSeleccionado(curso.idCurso) ? 'Quitar' : 'Seleccionar' }}
                       </button>
                     </td>
                   </tr>
-                  <tr *ngIf="cursosDisponibles.length === 0 && !loading">
+                  <tr *ngIf="cursosDisponibles.length === 0">
                     <td colspan="5" class="text-center py-5">
                       <div class="text-muted">
                         <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
                         No hay cursos disponibles para tu matrícula actual.
                       </div>
-                    </td>
-                  </tr>
-                  <tr *ngIf="loading">
-                    <td colspan="5" class="text-center py-5">
-                      <div class="spinner-border text-primary" role="status"></div>
                     </td>
                   </tr>
                 </tbody>
@@ -96,7 +94,7 @@
 
             <button 
               class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm"
-              [disabled]="cursosSeleccionados.length === 0 || loading"
+              [disabled]="cursosSeleccionados.length === 0"
               (click)="confirmarMatricula()">
               Finalizar Matrícula
             </button>
@@ -107,5 +105,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Spinner fuera del flujo principal -->
+    <ng-template #spinner>
+      <div class="text-center py-5 my-5">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+        <p class="mt-3 text-muted fw-bold">Cargando cursos disponibles...</p>
+      </div>
+    </ng-template>
   </div>
 </div>
