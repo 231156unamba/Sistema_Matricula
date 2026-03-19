@@ -94,6 +94,7 @@ export class AdminDashboardComponent implements OnInit {
   logout() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('estudiante');
+      localStorage.removeItem('adminSession');
       localStorage.removeItem('token');
     }
     this.router.navigate(['/inicio']);

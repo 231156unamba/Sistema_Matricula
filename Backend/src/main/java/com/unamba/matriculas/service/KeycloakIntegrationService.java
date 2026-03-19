@@ -49,10 +49,11 @@ public class KeycloakIntegrationService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(clientId, clientSecret);
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("grant_type", "password");
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
         map.add("username", username);
         map.add("password", password);
 

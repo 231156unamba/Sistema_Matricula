@@ -1,12 +1,15 @@
 package com.unamba.matriculas.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.unamba.matriculas.dto.LoginRequest;
 import com.unamba.matriculas.dto.AuthResult;
+import com.unamba.matriculas.model.Administrador;
 import com.unamba.matriculas.model.Estudiante;
 import com.unamba.matriculas.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +31,12 @@ public class AuthController {
             Estudiante estudiante = (Estudiante) authResult.getUser();
             
             if (estudiante == null) {
-                return ResponseEntity.ok(new LoginResponse(false, "Debe completar el registro", null, null));
+                return ResponseEntity.ok(new LoginResponse(false, "Debe completar el registro", null, null, null));
             }
             
-            return ResponseEntity.ok(new LoginResponse(true, "Login exitoso", estudiante, authResult.getToken()));
+            return ResponseEntity.ok(new LoginResponse(true, "Login exitoso", estudiante, null, authResult.getToken()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null));
+            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null, null));
         }
     }
     
@@ -46,9 +49,9 @@ public class AuthController {
             );
             Estudiante estudiante = (Estudiante) authResult.getUser();
             
-            return ResponseEntity.ok(new LoginResponse(true, "Login exitoso", estudiante, authResult.getToken()));
+            return ResponseEntity.ok(new LoginResponse(true, "Login exitoso", estudiante, null, authResult.getToken()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null));
+            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null, null));
         }
     }
 
@@ -61,34 +64,44 @@ public class AuthController {
             );
             Estudiante estudiante = (Estudiante) authResult.getUser();
             
-            return ResponseEntity.ok(new LoginResponse(true, "Validación de matrícula exitosa", estudiante, authResult.getToken()));
+            return ResponseEntity.ok(new LoginResponse(true, "Validación de matrícula exitosa", estudiante, null, authResult.getToken()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null));
+            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null, null));
+        }
+    }
+
+    @PostMapping("/login/admin")
+    public ResponseEntity<LoginResponse> loginAdmin(@Valid @RequestBody LoginRequest request) {
+        try {
+            AuthResult authResult = authService.loginAdmin(
+                request.getIdentificador(), 
+                request.getVoucher()
+            );
+            Administrador admin = (Administrador) authResult.getUser();
+            
+            return ResponseEntity.ok(new LoginResponse(true, "Login admin exitoso", null, admin, authResult.getToken()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new LoginResponse(false, e.getMessage(), null, null, null));
         }
     }
     
-    static class LoginResponse {
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class LoginResponse {
+        @JsonProperty("success")
         private boolean success;
+        
+        @JsonProperty("message")
         private String message;
+        
+        @JsonProperty("estudiante")
         private Estudiante estudiante;
+        
+        @JsonProperty("administrador")
+        private Administrador administrador;
+        
+        @JsonProperty("token")
         private String token;
-
-        public LoginResponse() {}
-
-        public LoginResponse(boolean success, String message, Estudiante estudiante, String token) {
-            this.success = success;
-            this.message = message;
-            this.estudiante = estudiante;
-            this.token = token;
-        }
-
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        public Estudiante getEstudiante() { return estudiante; }
-        public void setEstudiante(Estudiante estudiante) { this.estudiante = estudiante; }
-        public String getToken() { return token; }
-        public void setToken(String token) { this.token = token; }
     }
 }

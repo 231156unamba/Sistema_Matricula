@@ -8,7 +8,10 @@ import java.util.Optional;
 
 @Repository
 public interface PagoRepository extends JpaRepository<Pago, Long> {
+    Optional<Pago> findByVoucherIgnoreCase(String voucher);
+    Optional<Pago> findByVoucher(String voucher);
     Optional<Pago> findByVoucherAndValidadoTrue(String voucher);
+    List<Pago> findByEstudiante_IdEstudianteAndTipoPagoAndValidadoTrue(Long idEstudiante, Pago.TipoPago tipoPago);
     List<Pago> findByEstudiante_IdEstudiante(Long idEstudiante);
     Optional<Pago> findFirstByEstudiante_IdEstudianteOrderByFechaPagoDesc(Long idEstudiante);
     List<Pago> findByValidadoFalse();

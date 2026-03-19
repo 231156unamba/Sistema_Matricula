@@ -39,6 +39,10 @@ export class EstudianteService {
     return this.http.patch<Estudiante>(`${this.apiUrl}/${id}/estado`, { estado });
   }
 
+  verificarPagoMatricula(id: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/${id}/pago-matricula-validado`);
+  }
+
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

@@ -72,7 +72,7 @@ export class KeycloakAuthService {
     this.loading = true;
     
     // Abrir popup de Keycloak o redirigir
-    const keycloakUrl = 'http://localhost:8080/auth'; // URL de Keycloak
+    const keycloakUrl = 'http://localhost:8180/auth'; // URL de Keycloak
     const popup = window.open(
       keycloakUrl,
       'keycloak-login',

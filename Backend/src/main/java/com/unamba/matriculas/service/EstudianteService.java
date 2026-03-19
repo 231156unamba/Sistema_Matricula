@@ -2,8 +2,10 @@ package com.unamba.matriculas.service;
 
 import com.unamba.matriculas.model.Estudiante;
 import com.unamba.matriculas.model.DetalleMatricula;
+import com.unamba.matriculas.model.Pago;
 import com.unamba.matriculas.repository.EstudianteRepository;
 import com.unamba.matriculas.repository.DetalleMatriculaRepository;
+import com.unamba.matriculas.repository.PagoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ public class EstudianteService {
     
     private final EstudianteRepository estudianteRepository;
     private final DetalleMatriculaRepository detalleMatriculaRepository;
+    private final PagoRepository pagoRepository;
     
     public List<Estudiante> obtenerTodos() {
         return estudianteRepository.findAll();
@@ -67,6 +70,13 @@ public class EstudianteService {
     
     public long contarPorTipo(Estudiante.TipoEstudiante tipo) {
         return estudianteRepository.countByTipo(tipo);
+    }
+
+    public boolean verificarPagoMatricula(Long idEstudiante) {
+        List<Pago> pagosValidados = pagoRepository.findByEstudiante_IdEstudianteAndTipoPagoAndValidadoTrue(
+            idEstudiante, Pago.TipoPago.MATRICULA
+        );
+        return !pagosValidados.isEmpty();
     }
 
     public Map<String, Object> obtenerResumenAcademico(Long idEstudiante) throws Exception {

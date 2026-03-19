@@ -32,9 +32,19 @@ export class AuthService {
     });
   }
 
+  loginAdmin(usuario: string, clave: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login/admin`, {
+      identificador: usuario,
+      voucher: clave
+    });
+  }
+
   guardarSesion(response: AuthResponse) {
     if (response.estudiante) {
       localStorage.setItem('estudiante', JSON.stringify(response.estudiante));
+    }
+    if (response.administrador) {
+      localStorage.setItem('adminSession', JSON.stringify(response.administrador));
     }
     if (response.token) {
       localStorage.setItem('token', response.token);
@@ -60,6 +70,7 @@ export class AuthService {
   cerrarSesion() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('estudiante');
+      localStorage.removeItem('adminSession');
       localStorage.removeItem('token');
     }
   }

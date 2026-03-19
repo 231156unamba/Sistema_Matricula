@@ -9,11 +9,15 @@
     </div>
 
     <nav class="sidebar-nav">
-      <button class="nav-btn" type="button" *ngFor="let item of menu" (click)="onMenuClick(item.label)">
+      <button class="nav-btn" type="button" *ngFor="let item of menu"
+        (click)="onMenuClick(item.label)"
+        [disabled]="loadingPdf">
         <i class="bi" [class]="item.icon"></i>
         <span>{{ item.label }}</span>
+        <span *ngIf="loadingPdf && (item.label === 'Horario' || item.label === 'Malla curricular' || item.label === 'Reglamento')"
+          class="spinner-border spinner-border-sm ms-auto" role="status"></span>
       </button>
-      
+
       <div class="sidebar-footer mt-auto pt-4">
         <button class="nav-btn text-danger" (click)="logout()">
           <i class="bi bi-box-arrow-right"></i>
@@ -55,35 +59,30 @@
             <div class="tile-value">{{ estudiante?.carrera || '—' }}</div>
           </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-4">
           <div class="info-tile">
             <div class="tile-label">Año de ingreso</div>
             <div class="tile-value">{{ anioIngreso }}</div>
           </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-4">
           <div class="info-tile">
             <div class="tile-label">Créditos del semestre (máx.)</div>
             <div class="tile-value">{{ resumen?.creditosMaximos ?? estudiante?.creditosMaximos ?? '—' }}</div>
           </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-4">
           <div class="info-tile">
             <div class="tile-label">Créditos totales aprobados</div>
             <div class="tile-value">{{ resumen?.creditosAprobados ?? '—' }}</div>
           </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-4">
           <div class="info-tile">
             <div class="tile-label">Cursos aprobados</div>
             <div class="tile-value">{{ resumen?.cursosAprobados ?? '—' }}</div>
           </div>
         </div>
-
         <div class="col-12 col-md-6 col-xl-4">
           <div class="info-tile">
             <div class="tile-label">Tipo</div>
@@ -99,72 +98,4 @@
       </ng-template>
     </div>
   </section>
-
-  <!-- Modal de Horario -->
-  <app-modal 
-    [isOpen]="showHorarioModal" 
-    [title]="'Tu Horario - ' + (estudiante?.carrera || '')"
-    type="info"
-    [showFooter]="true"
-    [showImageSide]="false"
-    confirmText="Cerrar"
-    [showCancelButton]="false"
-    (onClose)="showHorarioModal = false"
-    (onConfirm)="showHorarioModal = false">
-    
-    <div class="horario-container">
-      <iframe *ngIf="horarioUrl && !imageError" [src]="horarioUrl" class="horario-pdf" (error)="onPdfError($event)"></iframe>
-      <div class="horario-error-msg" *ngIf="imageError">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        No se pudo cargar el horario para la carrera: {{ estudiante?.carrera }}
-        <br>
-        <small>El administrador aún no ha subido el archivo correspondiente.</small>
-      </div>
-    </div>
-  </app-modal>
-
-  <!-- Modal de Malla Curricular -->
-  <app-modal 
-    [isOpen]="showMallaModal" 
-    [title]="'Malla Curricular - ' + (estudiante?.carrera || '')"
-    type="info"
-    [showFooter]="true"
-    confirmText="Cerrar"
-    [showCancelButton]="false"
-    (onClose)="showMallaModal = false"
-    (onConfirm)="showMallaModal = false">
-    
-    <div class="horario-container">
-      <iframe *ngIf="mallaUrl && !mallaError" [src]="mallaUrl" class="horario-pdf"></iframe>
-      <div class="horario-error-msg" *ngIf="mallaError">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        No se pudo cargar la malla curricular para la carrera: {{ estudiante?.carrera }}
-        <br>
-        <small>El administrador aún no ha subido el archivo correspondiente.</small>
-      </div>
-    </div>
-  </app-modal>
-
-  <!-- Modal de Reglamento -->
-  <app-modal 
-    [isOpen]="showReglamentoModal" 
-    [title]="'Reglamento General de Estudiantes'"
-    type="info"
-    [showFooter]="true"
-    confirmText="Cerrar"
-    [showCancelButton]="false"
-    (onClose)="showReglamentoModal = false"
-    (onConfirm)="showReglamentoModal = false">
-    
-    <div class="horario-container">
-      <iframe *ngIf="reglamentoUrl && !reglamentoError" [src]="reglamentoUrl" class="horario-pdf"></iframe>
-      <div class="horario-error-msg" *ngIf="reglamentoError">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        No se pudo cargar el reglamento general.
-        <br>
-        <small>El administrador aún no ha subido el archivo correspondiente.</small>
-      </div>
-    </div>
-  </app-modal>
 </div>
-

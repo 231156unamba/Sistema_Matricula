@@ -64,7 +64,7 @@ export class LoginComponent {
   loginWithKeycloak() {
     this.loading = true;
     // Redirigir a Keycloak o abrir popup
-    const keycloakUrl = 'http://localhost:8080/auth/realms/unamba/protocol/openid-connect/auth?' +
+    const keycloakUrl = 'http://localhost:8180/auth/realms/unamba/protocol/openid-connect/auth?' +
       'client_id=frontend-app&' +
       'redirect_uri=' + encodeURIComponent(window.location.origin + '/keycloak-callback') + '&' +
       'response_type=code&' +

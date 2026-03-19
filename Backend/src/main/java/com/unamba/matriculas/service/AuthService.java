@@ -3,28 +3,13 @@ package com.unamba.matriculas.service;
 import com.unamba.matriculas.dto.AuthResult;
 import com.unamba.matriculas.model.Administrador;
 import com.unamba.matriculas.model.Estudiante;
-import com.unamba.matriculas.model.Pago; // <--- IMPORTACIÓN CORREGIDA
+import com.unamba.matriculas.model.Pago;
 import com.unamba.matriculas.repository.EstudianteRepository;
 import com.unamba.matriculas.repository.PagoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
-
-/**
- * Servicio de autenticación para estudiantes ingresantes y regulares.
- * 
- * FORMATO DEL CÓDIGO DE ESTUDIANTE:
- * El código tiene 6 dígitos: AASNNNN
- * - AA: Últimos 2 dígitos del año de ingreso (ej: 23 para 2023)
- * - S: Semestre de ingreso (1 = primera mitad del año, 2 = segunda mitad del año)
- * - NNNN: Número correlativo del estudiante
- * 
- * Ejemplos:
- * - 231156: Ingresó en el año 2023, semestre 2023-1 (primera mitad), número 1156
- * - 222115: Ingresó en el año 2022, semestre 2022-2 (segunda mitad), número 2115
- */
-import com.unamba.matriculas.repository.PagoRepository;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -65,11 +50,47 @@ public class AuthService {
             throw new Exception("El estudiante no está activo.");
         }
 
-        // Validamos el pago de matrícula con el voucher
-        pagoRepository.findByVoucherAndValidadoTrue(voucher)
-            .filter(pago -> pago.getEstudiante().getIdEstudiante().equals(estudiante.getIdEstudiante()))
-            .filter(pago -> Pago.TipoPago.MATRICULA.equals(pago.getTipoPago()))
-            .orElseThrow(() -> new Exception("Voucher de matrícula no válido o no pertenece al estudiante."));
+        // DEBUG LOGS
+        String voucherTrimmed = voucher.trim();
+        System.out.println("Validando voucher para DNI: " + dni + " y Voucher (original): '" + voucher + "', (trimmed): '" + voucherTrimmed + "'");
+
+        // Validamos el pago de matrícula con el voucher (Búsqueda flexible)
+        Optional<Pago> pagoGeneralOpt = pagoRepository.findByVoucherIgnoreCase(voucherTrimmed);
+        
+        if (pagoGeneralOpt.isEmpty()) {
+            System.out.println("Error: El voucher '" + voucherTrimmed + "' NO EXISTE en la tabla pagos (búsqueda insensitiva).");
+            
+            // DIAGNÓSTICO TOTAL: ¿Qué hay en la tabla pagos?
+            List<Pago> todos = pagoRepository.findAll();
+            System.out.println("DEBUG: Hay " + todos.size() + " registros en la tabla 'pagos'.");
+            for (Pago p : todos) {
+                System.out.println(" - ID: " + p.getIdPago() + ", Voucher: '" + p.getVoucher() + "', DNI: " + (p.getEstudiante() != null ? p.getEstudiante().getDni() : "null"));
+            }
+            
+            throw new Exception("El número de voucher ingresado no existe en nuestra base de datos.");
+        }
+
+        Pago pago = pagoGeneralOpt.get();
+        System.out.println("Voucher encontrado: ID=" + pago.getIdPago() + 
+                           ", EstudianteID=" + (pago.getEstudiante() != null ? pago.getEstudiante().getIdEstudiante() : "NULL") + 
+                           ", Tipo=" + pago.getTipoPago() + 
+                           ", Validado=" + pago.getValidado());
+
+        if (Boolean.FALSE.equals(pago.getValidado())) {
+            System.out.println("Error: El voucher existe pero NO está validado (validado=0).");
+            throw new Exception("El voucher de pago aún no ha sido validado por el área de tesorería.");
+        }
+
+        if (pago.getEstudiante() == null || !pago.getEstudiante().getIdEstudiante().equals(estudiante.getIdEstudiante())) {
+            String dueñoID = (pago.getEstudiante() != null) ? pago.getEstudiante().getIdEstudiante().toString() : "nadie";
+            System.out.println("Error: El voucher pertenece a " + dueñoID + ", pero intentó usarlo " + estudiante.getIdEstudiante());
+            throw new Exception("El voucher proporcionado pertenece a otro estudiante.");
+        }
+
+        if (!Pago.TipoPago.MATRICULA.equals(pago.getTipoPago())) {
+            System.out.println("Error: El voucher no es de tipo MATRICULA. Tipo actual: " + pago.getTipoPago());
+            throw new Exception("El voucher proporcionado no es un pago de matrícula.");
+        }
 
         // Generamos un token real de Keycloak para que el frontend pueda llamar a otros endpoints (como cursos)
         // El username es el DNI y el password para alumnos regulares es su código de estudiante.

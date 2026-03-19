@@ -48,6 +48,11 @@ public class EstudianteController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/{id}/pago-matricula-validado")
+    public ResponseEntity<Boolean> verificarPagoMatricula(@PathVariable Long id) {
+        return ResponseEntity.ok(estudianteService.verificarPagoMatricula(id));
+    }
     
     @PutMapping("/{id}/estado")
     public ResponseEntity<?> actualizarEstado(

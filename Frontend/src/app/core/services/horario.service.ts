@@ -11,15 +11,14 @@ export class HorarioService {
   constructor(private http: HttpClient) { }
 
   getCarreras(): Observable<string[]> {
-    return this.http.get<string[]>('http://localhost:8080/carreras.json');
+    return this.http.get<string[]>('http://localhost:8080/api/recursos/carreras');
   }
 
   uploadHorario(carrera: string, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('carrera', carrera);
     formData.append('file', file);
-
-    return this.http.post(`${this.apiUrl}/upload`, formData, {
+    return this.http.post('http://localhost:8080/api/recursos/horario/upload', formData, {
       responseType: 'text'
     });
   }

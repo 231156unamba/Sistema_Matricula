@@ -46,17 +46,26 @@ export class LoginMatriculaRegularComponent implements OnInit {
           this.authService.guardarSesion(response);
           // Guardar el voucher temporalmente para la matrícula
           localStorage.setItem('matricula_voucher', this.voucher);
-          this.modalService.showSuccess('Validación Exitosa', 'Procede a seleccionar tus cursos.');
+          
+          // Usar setTimeout para evitar ExpressionChangedAfterItHasBeenCheckedError
+          setTimeout(() => {
+            this.modalService.showSuccess('Validación Exitosa', 'Procede a seleccionar tus cursos.');
+          });
+
           setTimeout(() => {
             this.router.navigate(['/matricula-regular']);
           }, 1500);
         } else {
-          this.modalService.showError('Error', response.message || 'Voucher o DNI incorrectos.');
+          setTimeout(() => {
+            this.modalService.showError('Error', response.message || 'Voucher o DNI incorrectos.');
+          });
         }
       },
       error: (error) => {
         const backendMsg = error?.error?.message || 'Error al validar datos.';
-        this.modalService.showError('Error', backendMsg);
+        setTimeout(() => {
+          this.modalService.showError('Error', backendMsg);
+        });
       }
     });
   }

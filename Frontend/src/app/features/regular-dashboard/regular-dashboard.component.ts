@@ -1,11 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { Estudiante } from '../../core/models/estudiante.model';
 import { EstudianteService } from '../../core/services/estudiante.service';
 import { ModalService } from '../../shared/services/modal.service';
-import { RecursoService } from '../../core/services/recurso.service';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -27,17 +26,7 @@ export class RegularDashboardComponent implements OnInit {
   estudiante: Estudiante | null = null;
   resumen: ResumenAcademico | null = null;
   loading = true;
-  showHorarioModal = false;
-  showMallaModal = false;
-  showReglamentoModal = false;
-
-  horarioUrl: SafeResourceUrl | null = null;
-  mallaUrl: SafeResourceUrl | null = null;
-  reglamentoUrl: SafeResourceUrl | null = null;
-
-  imageError = false;
-  mallaError = false;
-  reglamentoError = false;
+  loadingPdf = false;
 
   menu = [
     { label: 'Historial', icon: 'bi-clock-history' },
@@ -47,21 +36,17 @@ export class RegularDashboardComponent implements OnInit {
     { label: 'Horario', icon: 'bi-calendar-week' }
   ];
 
+  private readonly API = 'http://localhost:8080/api/recursos';
+
   constructor(
     private estudianteService: EstudianteService,
     private modalService: ModalService,
-    private recursoService: RecursoService,
     private router: Router,
-    private sanitizer: DomSanitizer,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    if (typeof window === 'undefined') {
-      this.loading = false;
-      return;
-    }
-
     const raw = window.localStorage.getItem('estudiante');
     if (!raw) {
       this.loading = false;
@@ -75,7 +60,6 @@ export class RegularDashboardComponent implements OnInit {
     } catch {
       this.loading = false;
       window.localStorage.removeItem('estudiante');
-      this.modalService.showError('Sesión', 'Sesión inválida. Inicia sesión nuevamente.');
       this.router.navigate(['/login-regular']);
       return;
     }
@@ -83,116 +67,88 @@ export class RegularDashboardComponent implements OnInit {
     const id = this.estudiante?.idEstudiante;
     if (!id) {
       this.loading = false;
-      this.modalService.showError('Sesión', 'Falta el ID del estudiante. Inicia sesión nuevamente.');
       this.router.navigate(['/login-regular']);
       return;
     }
 
-    // Refrescamos datos desde BD (evita depender solo del localStorage)
-    this.loading = true;
-    
     forkJoin({
       estudiante: this.estudianteService.obtenerPorId(id),
       resumen: this.estudianteService.obtenerResumenAcademico(id)
     }).pipe(
-      finalize(() => { 
-        console.log('Finalizando loading. Estudiante:', this.estudiante, 'Resumen:', this.resumen);
-        this.loading = false; 
-        if (typeof window !== 'undefined') {
-          this.cdr.detectChanges();
-        }
-      })
+      finalize(() => { this.loading = false; this.cdr.detectChanges(); })
     ).subscribe({
       next: (result) => {
-        console.log('Datos recibidos:', result);
         this.estudiante = result.estudiante;
         this.resumen = result.resumen as ResumenAcademico;
-        console.log('Después de asignar - Estudiante:', this.estudiante, 'Resumen:', this.resumen);
-        if (typeof window !== 'undefined') {
-          this.cdr.detectChanges();
-        }
+        this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Error cargando datos:', error);
-        // Si falla, al menos mostramos la data de sesión que ya tenemos
-        if (typeof window !== 'undefined') {
-          this.cdr.detectChanges();
-        }
-      }
+      error: () => this.cdr.detectChanges()
     });
   }
 
   onMenuClick(label: string): void {
-    if (label === 'Horario') {
-      this.verHorario();
-    } else if (label === 'Matrícula') {
-      this.router.navigate(['/login-matricula-regular']);
-    } else if (label === 'Malla curricular') {
-      this.cargarMalla();
-    } else if (label === 'Reglamento') {
-      this.cargarReglamento();
-    } else {
-      // Otros menús no implementados aún o con otra lógica
-      console.log('Menú clickeado:', label);
+    switch (label) {
+      case 'Horario': this.abrirPdf('horario'); break;
+      case 'Malla curricular': this.abrirPdf('malla'); break;
+      case 'Reglamento': this.abrirPdf('reglamento'); break;
+      case 'Matrícula': this.verificarYEntrarMatricula(); break;
     }
   }
 
-  verHorario(): void {
-    if (!this.estudiante?.carrera) {
-      this.modalService.showError('Horario', 'No se encontró información de tu carrera.');
+  abrirPdf(tipo: 'horario' | 'malla' | 'reglamento'): void {
+    if ((tipo === 'horario' || tipo === 'malla') && !this.estudiante?.carrera) {
+      this.modalService.showError('Error', 'No se encontró información de tu carrera.');
       return;
     }
 
-    this.imageError = false;
-    const carreraNormalizada = this.normalizarTexto(this.estudiante.carrera);
-    const url = `http://localhost:8080/horarios/${carreraNormalizada}.pdf`;
-    this.horarioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.showHorarioModal = true;
+    const carrera = this.normalizarTexto(this.estudiante?.carrera || '');
+    const url = tipo === 'reglamento'
+      ? `${this.API}/reglamento`
+      : `${this.API}/${tipo}/${carrera}`;
+
+    this.loadingPdf = true;
+    this.cdr.detectChanges();
+
+    this.http.get(url, { responseType: 'blob' }).pipe(
+      finalize(() => { this.loadingPdf = false; this.cdr.detectChanges(); })
+    ).subscribe({
+      next: (blob) => {
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        // Liberar memoria después de abrir
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      },
+      error: () => {
+        this.modalService.showError('Archivo no disponible',
+          'El administrador aún no ha subido este archivo.');
+      }
+    });
   }
 
-  cargarMalla() {
-    if (!this.estudiante?.carrera) {
-      this.modalService.showError('Malla', 'No se encontró información de tu carrera.');
-      return;
-    }
-    this.mallaError = false;
-    const carreraNormalizada = this.normalizarTexto(this.estudiante.carrera);
-    const url = `http://localhost:8080/mallas/${carreraNormalizada}.pdf`;
-    this.mallaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.showMallaModal = true;
-  }
-
-  cargarReglamento() {
-    this.reglamentoError = false;
-    const url = `http://localhost:8080/reglamento/reglamento_general.pdf`;
-    this.reglamentoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.showReglamentoModal = true;
+  verificarYEntrarMatricula(): void {
+    if (!this.estudiante?.idEstudiante) return;
+    this.loading = true;
+    this.estudianteService.verificarPagoMatricula(this.estudiante.idEstudiante)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({
+        next: (pagado) => this.router.navigate([pagado ? '/matricula-regular' : '/login-matricula-regular']),
+        error: () => this.router.navigate(['/login-matricula-regular'])
+      });
   }
 
   private normalizarTexto(texto: string): string {
-    return texto
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '_')
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, ""); // Quitar tildes
+    if (!texto) return '';
+    return texto.toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
   }
- 
-   onPdfError(event: any): void {
-     this.imageError = true;
-     console.error('No se pudo cargar el PDF del horario:', this.horarioUrl);
-     this.cdr.detectChanges();
-   }
 
   get nombreCompleto(): string {
-    const n = this.estudiante?.nombres || '';
-    const a = this.estudiante?.apellidos || '';
-    return `${n} ${a}`.trim();
+    return `${this.estudiante?.nombres || ''} ${this.estudiante?.apellidos || ''}`.trim();
   }
 
   get anioIngreso(): string {
     const codigo = this.estudiante?.codigoEstudiante || '';
-    // Si es formato AASNNNN (ej 231156), AA -> 20AA
     if (codigo.length >= 2) {
       const aa = codigo.substring(0, 2);
       if (/^\d{2}$/.test(aa)) return `20${aa}`;
@@ -204,13 +160,10 @@ export class RegularDashboardComponent implements OnInit {
     return '—';
   }
 
-  logout() {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('estudiante');
-      window.localStorage.removeItem('token');
-      window.localStorage.removeItem('matricula_voucher');
-    }
+  logout(): void {
+    window.localStorage.removeItem('estudiante');
+    window.localStorage.removeItem('token');
+    window.localStorage.removeItem('matricula_voucher');
     this.router.navigate(['/inicio']);
   }
 }
-
