@@ -20,6 +20,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,106 +51,84 @@ public class KeycloakIntegrationService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("grant_type", "password");
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("username", username);
-        map.add("password", password);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "password");
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("username", username);
+        form.add("password", password);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                tokenEndpoint, new HttpEntity<>(form, headers), Map.class);
             Map<String, Object> body = response.getBody();
-
-            if (body != null && body.containsKey("access_token")) {
-                String accessToken = (String) body.get("access_token");
-                return processToken(accessToken);
-            } else {
+            if (body == null || !body.containsKey("access_token"))
                 throw new Exception("No se pudo obtener el token de acceso.");
-            }
+            return processToken((String) body.get("access_token"));
         } catch (HttpClientErrorException e) {
-            throw new Exception("Credenciales incorrectas o error en Keycloak: " + e.getStatusCode());
+            throw new Exception("Credenciales incorrectas.");
         }
     }
 
     private AuthResult processToken(String accessToken) throws Exception {
         String[] parts = accessToken.split("\\.");
-        if (parts.length < 2) {
-            throw new Exception("Token JWT inválido formatado.");
-        }
+        if (parts.length < 2) throw new Exception("Token JWT inválido.");
 
-        String payloadBase64 = parts[1];
-        String payloadJson = new String(Base64.getUrlDecoder().decode(payloadBase64));
+        Map<String, Object> claims = objectMapper.readValue(
+            new String(Base64.getUrlDecoder().decode(parts[1])),
+            new TypeReference<Map<String, Object>>() {});
 
-        Map<String, Object> claims = objectMapper.readValue(payloadJson, new TypeReference<Map<String, Object>>() {});
+        Long dbId = extractLong(claims, "db_id");
+        String tipoPersona = extractString(claims, "tipo_persona");
 
-        Long dbId = null;
-        String tipoPersona = null;
-        
-        if (claims.containsKey("db_id")) {
-            Object idObj = claims.get("db_id");
-            if (idObj instanceof Number) {
-                dbId = ((Number) idObj).longValue();
-            } else if (idObj instanceof String) {
-                dbId = Long.parseLong((String) idObj);
-            } else if (idObj instanceof java.util.List) {
-                dbId = Long.parseLong(((java.util.List<String>) idObj).get(0));
-            }
-        }
-        
-        if (claims.containsKey("tipo_persona")) {
-            Object tipoObj = claims.get("tipo_persona");
-            if (tipoObj instanceof String) {
-                tipoPersona = (String) tipoObj;
-            } else if (tipoObj instanceof java.util.List) {
-                tipoPersona = ((java.util.List<String>) tipoObj).get(0);
-            }
-        }
-
+        // Fallback: buscar por preferred_username si no hay claims personalizados
         if (dbId == null || tipoPersona == null) {
-            String usernameToFind = (String) claims.get("preferred_username");
-            if (usernameToFind == null) {
-                throw new Exception("Faltan claims en Keycloak y no se pudo obtener el preferred_username. Claims actuales: " + claims.keySet());
-            }
+            String username = (String) claims.get("preferred_username");
+            if (username == null)
+                throw new Exception("No se pudo identificar al usuario desde el token.");
 
-            java.util.Optional<Estudiante> optEst = estudianteRepository.findByDni(usernameToFind);
+            var optEst = estudianteRepository.findByDni(username);
             if (optEst.isPresent()) {
                 dbId = optEst.get().getIdEstudiante();
                 tipoPersona = "ESTUDIANTE";
             } else {
-                java.util.Optional<Administrador> optAdmin = administradorRepository.findByUsuario(usernameToFind);
+                var optAdmin = administradorRepository.findByUsuario(username);
                 if (optAdmin.isPresent()) {
                     dbId = optAdmin.get().getIdAdmin();
                     tipoPersona = "ADMIN";
                 } else {
-                    throw new Exception("Usuario autenticado en Keycloak pero no existe en BD local: " + usernameToFind);
+                    throw new Exception("Usuario autenticado en Keycloak pero no existe en la BD: " + username);
                 }
-            }
-        }
-        
-        // El claim "activo" también puede ser validado aquí
-        if (claims.containsKey("activo")) {
-            Boolean activo = (Boolean) claims.get("activo");
-            if (activo != null && !activo) {
-                throw new Exception("El usuario está inactivo en Keycloak.");
             }
         }
 
         if ("ADMIN".equalsIgnoreCase(tipoPersona)) {
-            final Long finalDbId = dbId;
-            Administrador admin = administradorRepository.findById(dbId)
-                    .orElseThrow(() -> new Exception("Administrador no encontrado en la BD local con ID: " + finalDbId));
+            final Long id = dbId;
+            Administrador admin = administradorRepository.findById(id)
+                .orElseThrow(() -> new Exception("Administrador no encontrado: " + id));
             return new AuthResult(admin, "ADMIN", accessToken);
-            
         } else if ("ESTUDIANTE".equalsIgnoreCase(tipoPersona)) {
-            final Long finalDbId = dbId;
-            Estudiante estudiante = estudianteRepository.findById(dbId)
-                    .orElseThrow(() -> new Exception("Estudiante no encontrado en la BD local con ID: " + finalDbId));
+            final Long id = dbId;
+            Estudiante estudiante = estudianteRepository.findById(id)
+                .orElseThrow(() -> new Exception("Estudiante no encontrado: " + id));
             return new AuthResult(estudiante, "ESTUDIANTE", accessToken);
         } else {
-            throw new Exception("tipo_persona desconocido: " + tipoPersona);
+            throw new Exception("Tipo de persona desconocido: " + tipoPersona);
         }
+    }
+
+    private Long extractLong(Map<String, Object> claims, String key) {
+        Object val = claims.get(key);
+        if (val instanceof Number) return ((Number) val).longValue();
+        if (val instanceof String) return Long.parseLong((String) val);
+        if (val instanceof List<?> list && !list.isEmpty()) return Long.parseLong(list.get(0).toString());
+        return null;
+    }
+
+    private String extractString(Map<String, Object> claims, String key) {
+        Object val = claims.get(key);
+        if (val instanceof String) return (String) val;
+        if (val instanceof List<?> list && !list.isEmpty()) return list.get(0).toString();
+        return null;
     }
 }
