@@ -9,6 +9,7 @@ CREATE TABLE estudiantes (
     tipo ENUM('INGRESANTE','REGULAR') NOT NULL,
     estado ENUM('ACTIVO','INHABILITADO','RETIRADO') DEFAULT 'ACTIVO',
     creditos_maximos INT DEFAULT 23,
+    carrera VARCHAR(100),
     fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE cursos (
@@ -164,12 +165,12 @@ INSERT INTO prerrequisitos (id_curso, id_curso_prerrequisito) VALUES
 (17, 14);
 
 -- Estudiantes Regulares
-INSERT INTO estudiantes (codigo_estudiante, dni, nombres, apellidos, tipo, estado, creditos_maximos) VALUES
-('231001', '72345678', 'Ana', 'García Mendoza', 'REGULAR', 'ACTIVO', 23),
-('231002', '73456789', 'Luis', 'Torres Quispe', 'REGULAR', 'ACTIVO', 23),
-('231003', '74567890', 'Carmen', 'Flores Huamán', 'REGULAR', 'ACTIVO', 12),
-('222001', '71234567', 'Pedro', 'Mamani Cruz', 'REGULAR', 'ACTIVO', 23),
-('222002', '70123456', 'Rosa', 'Ccama Yupanqui', 'REGULAR', 'ACTIVO', 23);
+INSERT INTO estudiantes (codigo_estudiante, dni, nombres, apellidos, tipo, estado, creditos_maximos, carrera) VALUES
+('231001', '72345678', 'Ana', 'García Mendoza', 'REGULAR', 'ACTIVO', 23, 'Ingeniería de Sistemas'),
+('231002', '73456789', 'Luis', 'Torres Quispe', 'REGULAR', 'ACTIVO', 23, 'Ingeniería Civil'),
+('231003', '74567890', 'Carmen', 'Flores Huamán', 'REGULAR', 'ACTIVO', 12, 'Administración de Empresas'),
+('222001', '71234567', 'Pedro', 'Mamani Cruz', 'REGULAR', 'ACTIVO', 23, 'Ingeniería de Sistemas'),
+('222002', '70123456', 'Rosa', 'Ccama Yupanqui', 'REGULAR', 'ACTIVO', 23, 'Derecho');
 
 -- Estudiantes Ingresantes (sin código aún)
 INSERT INTO estudiantes (dni, nombres, apellidos, tipo, estado) VALUES
@@ -255,23 +256,105 @@ INSERT INTO anuncios (titulo, contenido, tipo, fecha_inicio, fecha_fin) VALUES
 ('Comunicado Importante', 'Se informa a la comunidad universitaria que el día 15 de febrero no habrá atención por feriado nacional.', 'COMUNICADO', NULL, NULL),
 ('Inicio de Clases', 'Las clases del semestre 2024-I iniciarán el 5 de febrero. Se solicita puntualidad.', 'COMUNICADO', '2024-02-05 08:00:00', NULL);
 
--- ============================================
--- DATOS PARA PRUEBAS
--- ============================================
--- Usuarios Admin:
---   usuario: admin, password: admin123 (SUPER_ADMIN)
---   usuario: registrador1, password: admin123 (REGISTRADOR)
---   usuario: registrador2, password: admin123 (ADMIN)
---
--- Estudiantes Regulares (para login):
---   codigo: 231001, voucher: VCH001234 (Ana García - 2do semestre)
---   codigo: 231002, voucher: VCH001235 (Luis Torres - 2do semestre)
---   codigo: 231003, voucher: VCH001236 (Carmen Flores - 12 créditos)
---   codigo: 222001, voucher: VCH001237 (Pedro Mamani - 3er semestre)
---   codigo: 222002, voucher: VCH001238 (Rosa Ccama - 4to semestre)
---
--- Estudiantes Ingresantes (para login):
---   dni: 75678901, voucher: VCH001239 (Miguel Condori)
---   dni: 76789012, voucher: VCH001241 (Julia Huanca)
--- ============================================
+
+
+SET SQL_SAFE_UPDATES = 0;
+DELETE FROM prerrequisitos;
+SET SQL_SAFE_UPDATES = 1;
+-- 1. Limpiar prerrequisitos viejos
+DELETE FROM prerrequisitos;
+
+-- 2. Agregar cursos nuevos (solo si no existen)
+INSERT IGNORE INTO cursos (codigo_curso, nombre, creditos, semestre) VALUES
+('INF501', 'Ingeniería de Software II', 4, 5),
+('RED501', 'Redes de Computadoras', 4, 5),
+('SO501',  'Sistemas Operativos', 4, 5),
+('MAT501', 'Matemática Discreta', 3, 5),
+('INF502', 'Inteligencia Artificial', 3, 5),
+('INF601', 'Desarrollo de Aplicaciones Móviles', 4, 6),
+('SEG601', 'Seguridad Informática', 4, 6),
+('INF602', 'Minería de Datos', 4, 6),
+('GES601', 'Gestión de Proyectos TI', 3, 6),
+('INF603', 'Computación en la Nube', 3, 6),
+('INF701', 'Sistemas Distribuidos', 4, 7),
+('INF702', 'Visión por Computadora', 3, 7),
+('INF703', 'Procesamiento de Lenguaje Natural', 3, 7),
+('INF704', 'Blockchain y Tecnologías Emergentes', 3, 7),
+('INF705', 'Auditoría de Sistemas', 3, 7),
+('INF801', 'Tesis I', 4, 8),
+('INF802', 'Práctica Pre-Profesional', 4, 8),
+('INF803', 'Emprendimiento Tecnológico', 3, 8),
+('CIV501', 'Mecánica de Suelos', 4, 5),
+('CIV502', 'Estructuras I', 4, 5),
+('CIV503', 'Hidráulica', 4, 5),
+('CIV504', 'Topografía Avanzada', 3, 5),
+('CIV601', 'Estructuras II', 4, 6),
+('CIV602', 'Diseño de Pavimentos', 4, 6),
+('CIV603', 'Ingeniería Sanitaria', 3, 6),
+('CIV701', 'Diseño Sísmico', 4, 7),
+('CIV702', 'Gestión de Obras', 3, 7),
+('CIV801', 'Tesis Civil I', 4, 8),
+('ADM501', 'Marketing Estratégico', 4, 5),
+('ADM502', 'Finanzas Corporativas', 4, 5),
+('ADM503', 'Gestión del Talento Humano', 3, 5),
+('ADM601', 'Comercio Internacional', 4, 6),
+('ADM602', 'Contabilidad Gerencial', 4, 6),
+('ADM701', 'Plan de Negocios', 4, 7),
+('ADM702', 'Derecho Empresarial', 3, 7),
+('ADM801', 'Tesis Administración I', 4, 8);
+
+-- 3. Insertar prerrequisitos usando subqueries (IDs exactos)
+INSERT INTO prerrequisitos (id_curso, id_curso_prerrequisito) VALUES
+((SELECT id_curso FROM cursos WHERE codigo_curso='MAT201'),(SELECT id_curso FROM cursos WHERE codigo_curso='MAT101')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='FIS201'),(SELECT id_curso FROM cursos WHERE codigo_curso='FIS101')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF201'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF101')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='MAT301'),(SELECT id_curso FROM cursos WHERE codigo_curso='MAT201')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF301'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF201')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='BD301'), (SELECT id_curso FROM cursos WHERE codigo_curso='INF201')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='ALG301'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF301')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF401'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF301')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='BD401'), (SELECT id_curso FROM cursos WHERE codigo_curso='BD301')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='WEB401'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF201')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='ARQ401'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF401')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF501'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF401')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF502'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF301')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF601'),(SELECT id_curso FROM cursos WHERE codigo_curso='WEB401')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF602'),(SELECT id_curso FROM cursos WHERE codigo_curso='BD401')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF701'),(SELECT id_curso FROM cursos WHERE codigo_curso='RED501')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='INF702'),(SELECT id_curso FROM cursos WHERE codigo_curso='INF502')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='CIV601'),(SELECT id_curso FROM cursos WHERE codigo_curso='CIV502')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='CIV701'),(SELECT id_curso FROM cursos WHERE codigo_curso='CIV601')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='ADM502'),(SELECT id_curso FROM cursos WHERE codigo_curso='EST201')),
+((SELECT id_curso FROM cursos WHERE codigo_curso='ADM701'),(SELECT id_curso FROM cursos WHERE codigo_curso='ADM502'));
+
+
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = 'Sistematricula' AND TABLE_NAME = 'cursos' AND COLUMN_NAME = 'carrera';
+ALTER TABLE cursos ADD COLUMN carrera VARCHAR(100);
+USE Sistematricula;
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE cursos SET carrera = 'COMUN' WHERE codigo_curso IN ('MAT101','FIS101','QUI101','COM101','INF101','MAT102','MAT201','FIS201','INF201','EST201','COM201','MAT301','INF301','BD301','ALG301','INF401','BD401','WEB401','ARQ401');
+
+UPDATE cursos SET carrera = 'Ingeniería de Sistemas' WHERE codigo_curso IN ('INF501','RED501','SO501','MAT501','INF502','INF601','SEG601','INF602','GES601','INF603','INF701','INF702','INF703','INF704','INF705','INF801','INF802','INF803');
+
+UPDATE cursos SET carrera = 'Ingeniería Civil' WHERE codigo_curso IN ('CIV501','CIV502','CIV503','CIV504','CIV601','CIV602','CIV603','CIV701','CIV702','CIV801');
+
+UPDATE cursos SET carrera = 'Administración de Empresas' WHERE codigo_curso IN ('ADM501','ADM502','ADM503','ADM601','ADM602','ADM701','ADM702','ADM801');
+
+SET SQL_SAFE_UPDATES = 1;
+
+
+-- Ver qué cursos tiene el estudiante 1 y su estado
+SELECT e.nombres, e.carrera, dm.estado, dm.nota_final, c.nombre, c.semestre, c.carrera as carrera_curso
+FROM estudiantes e
+JOIN matriculas m ON m.id_estudiante = e.id_estudiante
+JOIN detalle_matricula dm ON dm.id_matricula = m.id_matricula
+JOIN cursos c ON c.id_curso = dm.id_curso
+WHERE e.id_estudiante = 1;
+
+-- Ver si los cursos tienen carrera asignada
+SELECT codigo_curso, nombre, semestre, carrera FROM cursos ORDER BY semestre;
+
+
 

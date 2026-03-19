@@ -18,7 +18,16 @@ export class AdminDashboardComponent implements OnInit {
   selectedCarrera = '';
   selectedFile: File | null = null;
   loading = false;
-  activeTab: 'horarios' | 'mallas' | 'reglamento' = 'horarios';
+  activeTab: 'horarios' | 'mallas' | 'reglamento' | 'matriculas' | 'estudiantes' = 'horarios';
+
+  // Datos de listas
+  listaMatriculas: any[] = [];
+  listaEstudiantes: any[] = [];
+  loadingLista = false;
+  busquedaMatricula = '';
+  busquedaEstudiante = '';
+
+  private readonly API = 'http://localhost:8080/api/reportes';
 
   constructor(
     private horarioService: HorarioService,
@@ -38,10 +47,49 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab: 'horarios' | 'mallas' | 'reglamento') {
+  setActiveTab(tab: 'horarios' | 'mallas' | 'reglamento' | 'matriculas' | 'estudiantes') {
     this.activeTab = tab;
     this.selectedFile = null;
+    if (tab === 'matriculas' && this.listaMatriculas.length === 0) this.cargarMatriculas();
+    if (tab === 'estudiantes' && this.listaEstudiantes.length === 0) this.cargarEstudiantes();
     this.cdr.detectChanges();
+  }
+
+  cargarMatriculas(): void {
+    this.loadingLista = true;
+    const token = localStorage.getItem('token') || '';
+    fetch(`${this.API}/matriculas/lista`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json()).then(data => { this.listaMatriculas = data; this.loadingLista = false; this.cdr.detectChanges(); })
+      .catch(() => { this.loadingLista = false; this.cdr.detectChanges(); });
+  }
+
+  cargarEstudiantes(): void {
+    this.loadingLista = true;
+    const token = localStorage.getItem('token') || '';
+    fetch(`${this.API}/estudiantes/lista`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json()).then(data => { this.listaEstudiantes = data; this.loadingLista = false; this.cdr.detectChanges(); })
+      .catch(() => { this.loadingLista = false; this.cdr.detectChanges(); });
+  }
+
+  get matriculasFiltradas(): any[] {
+    const q = this.busquedaMatricula.toLowerCase();
+    if (!q) return this.listaMatriculas;
+    return this.listaMatriculas.filter(m =>
+      (m.nombreCompleto || '').toLowerCase().includes(q) ||
+      (m.dni || '').includes(q) ||
+      (m.codigoEstudiante || '').toLowerCase().includes(q) ||
+      (m.tipo || '').toLowerCase().includes(q)
+    );
+  }
+
+  get estudiantesFiltrados(): any[] {
+    const q = this.busquedaEstudiante.toLowerCase();
+    if (!q) return this.listaEstudiantes;
+    return this.listaEstudiantes.filter(e =>
+      (e.nombreCompleto || '').toLowerCase().includes(q) ||
+      (e.dni || '').includes(q) ||
+      (e.codigoEstudiante || '').toLowerCase().includes(q)
+    );
   }
 
   onFileSelected(event: any) {

@@ -1,125 +1,190 @@
 <div class="matricula-shell">
-  <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="container-fluid py-4 px-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
       <div>
         <h1 class="page-title">Selección de Cursos</h1>
         <p class="page-subtitle">Periodo Académico 2024-I</p>
       </div>
-      <div class="d-flex align-items-center gap-3">
-        <div class="creditos-summary">
-          <div class="creditos-box" [class.warning]="totalCreditos > creditosMaximos * 0.8">
-            <span class="label">Créditos Seleccionados</span>
-            <span class="value">{{ totalCreditos }} / {{ creditosMaximos }}</span>
-          </div>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+
+        <!-- Promedio semestre anterior -->
+        <div class="stat-box" *ngIf="promedio !== null">
+          <span class="stat-label">Promedio anterior</span>
+          <span class="stat-value" [class.text-success]="promedio >= 13" [class.text-danger]="promedio < 11">
+            {{ promedio | number:'1.2-2' }}
+          </span>
         </div>
+
+        <!-- Créditos -->
+        <div class="creditos-box" [class.warning]="totalCreditos > creditosMaximos * 0.85">
+          <span class="stat-label">Créditos</span>
+          <span class="stat-value">{{ totalCreditos }} / {{ creditosMaximos }}</span>
+        </div>
+
+        <!-- Alerta jalado 2 veces -->
+        <div class="alert-badge" *ngIf="info?.tieneJaladoDosVeces">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> Límite reducido a 14 créditos
+        </div>
+
         <button class="btn btn-outline-danger btn-sm rounded-3 px-3 py-2" (click)="logout()">
-          <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+          <i class="bi bi-box-arrow-right me-1"></i> Salir
         </button>
       </div>
     </div>
 
-    <div class="row g-4" *ngIf="!loading; else spinner">
-      <!-- Lista de Cursos -->
-      <div class="col-lg-8" *ngIf="cursosDisponibles.length > 0; else noCursos">
-        <div class="card shadow-sm border-0 rounded-4">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-secondary">
-                  <tr>
-                    <th class="ps-4">Código</th>
-                    <th>Curso</th>
-                    <th>Créditos</th>
-                    <th>Semestre</th>
-                    <th class="text-center pe-4">Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let curso of cursosDisponibles" 
-                      [class.table-active]="isCursoSeleccionado(curso.idCurso)"
-                      (click)="toggleCurso(curso)"
-                      style="cursor: pointer;">
-                    <td class="ps-4 fw-bold">{{ curso.codigoCurso }}</td>
-                    <td>{{ curso.nombre }}</td>
-                    <td>{{ curso.creditos }}</td>
-                    <td>{{ curso.semestre }}°</td>
-                    <td class="text-center pe-4">
-                      <button 
-                        class="btn-select" 
-                        [class.selected]="isCursoSeleccionado(curso.idCurso)"
-                        (click)="$event.stopPropagation(); toggleCurso(curso)">
-                        {{ isCursoSeleccionado(curso.idCurso) ? 'Quitar' : 'Seleccionar' }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Contenido -->
+    <div *ngIf="!loading; else spinner">
+      <div class="row g-4">
 
-      <ng-template #noCursos>
+        <!-- Tabla de cursos -->
         <div class="col-lg-8">
-          <div class="card shadow-sm border-0 rounded-4 py-5 text-center">
-            <div class="text-muted">
-              <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
-              No hay cursos disponibles para tu matrícula actual.
+          <div class="card shadow-sm border-0 rounded-4" *ngIf="cursosDisponibles.length > 0; else noCursos">
+            <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+              <h5 class="fw-bold mb-0">Cursos disponibles</h5>
+              <small class="text-muted">Mínimo {{ creditosMinimos }} cr. — Máximo {{ creditosMaximos }} cr.</small>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="bg-light text-secondary">
+                    <tr>
+                      <th class="ps-4">Código</th>
+                      <th>Curso</th>
+                      <th class="text-center">Créditos</th>
+                      <th class="text-center">Semestre</th>
+                      <th class="text-center">Estado</th>
+                      <th class="text-center pe-4">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let curso of cursosDisponibles"
+                        [class.row-selected]="isCursoSeleccionado(curso.idCurso)"
+                        [class.row-repeticion]="curso.esRepeticion && !isCursoSeleccionado(curso.idCurso)">
+                      <td class="ps-4 fw-bold text-muted">{{ curso.codigoCurso }}</td>
+                      <td>
+                        <div class="fw-semibold">{{ curso.nombre }}</div>
+                        <small class="text-danger fw-semibold" *ngIf="curso.esRepeticion">
+                          <i class="bi bi-arrow-repeat me-1"></i>Repetición (jalado {{ curso.vecesDesaprobado }}x)
+                        </small>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge-creditos">{{ curso.creditos }}</span>
+                      </td>
+                      <td class="text-center text-muted">{{ curso.semestre }}°</td>
+                      <td class="text-center">
+                        <span class="badge bg-warning text-dark" *ngIf="curso.esRepeticion">Repetición</span>
+                        <span class="badge bg-success-subtle text-success" *ngIf="!curso.esRepeticion">Disponible</span>
+                      </td>
+                      <td class="text-center pe-4">
+                        <button class="btn-select"
+                          [class.selected]="isCursoSeleccionado(curso.idCurso)"
+                          type="button"
+                          (click)="toggleCurso(curso)">
+                          {{ isCursoSeleccionado(curso.idCurso) ? 'Quitar' : 'Agregar' }}
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      </ng-template>
 
-      <!-- Resumen y Confirmación -->
-      <div class="col-lg-4">
-        <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 2rem;">
-          <div class="card-body p-4">
-            <h3 class="h5 mb-4 fw-bold">Resumen de Matrícula</h3>
-            
-            <div class="selected-list mb-4">
-              <div class="selected-item d-flex justify-content-between align-items-center" *ngFor="let curso of cursosSeleccionados">
-                <div>
-                  <div class="item-name">{{ curso.nombre }}</div>
-                  <div class="item-meta">{{ curso.codigoCurso }} • {{ curso.creditos }} cr.</div>
+          <ng-template #noCursos>
+            <div class="card shadow-sm border-0 rounded-4 py-5 text-center">
+              <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
+              <p class="text-muted fw-semibold">No hay cursos disponibles para matricularte.<br>
+                <small>Ya aprobaste todos los cursos disponibles o estás al día.</small>
+              </p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Resumen -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top:1.5rem">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-3">Resumen de Matrícula</h5>
+
+              <!-- Promedio -->
+              <div class="promedio-card mb-3" *ngIf="promedio !== null">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-secondary small">Promedio semestre anterior</span>
+                  <span class="fw-bold fs-5"
+                    [class.text-success]="promedio >= 13"
+                    [class.text-warning]="promedio >= 11 && promedio < 13"
+                    [class.text-danger]="promedio < 11">
+                    {{ promedio | number:'1.2-2' }}
+                  </span>
                 </div>
-                <button class="btn-remove" (click)="toggleCurso(curso)"><i class="bi bi-x"></i></button>
               </div>
-              <div class="text-muted text-center py-3" *ngIf="cursosSeleccionados.length === 0">
-                No has seleccionado cursos aún.
+
+              <!-- Cursos seleccionados -->
+              <div class="selected-list mb-3">
+                <div class="selected-item d-flex justify-content-between align-items-center"
+                     *ngFor="let curso of cursosSeleccionados">
+                  <div>
+                    <div class="item-name">{{ curso.nombre }}</div>
+                    <div class="item-meta">{{ curso.codigoCurso }} · {{ curso.creditos }} cr.
+                      <span class="text-danger" *ngIf="curso.esRepeticion"> · Repetición</span>
+                    </div>
+                  </div>
+                  <button class="btn-remove" (click)="toggleCurso(curso)">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+                <div class="text-muted text-center py-3 small" *ngIf="cursosSeleccionados.length === 0">
+                  Aún no seleccionaste cursos.
+                </div>
               </div>
-            </div>
 
-            <div class="divider mb-3"></div>
-            
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-secondary">Total Cursos</span>
-              <span class="fw-bold">{{ cursosSeleccionados.length }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-4">
-              <span class="text-secondary">Total Créditos</span>
-              <span class="fw-bold" [class.text-danger]="totalCreditos > creditosMaximos">{{ totalCreditos }}</span>
-            </div>
+              <div class="divider mb-3"></div>
 
-            <button 
-              class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm"
-              [disabled]="cursosSeleccionados.length === 0"
-              (click)="confirmarMatricula()">
-              Finalizar Matrícula
-            </button>
-            <button class="btn btn-link w-100 mt-2 text-secondary text-decoration-none" routerLink="/regular">
-              Cancelar
-            </button>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-secondary small">Cursos</span>
+                <span class="fw-bold">{{ cursosSeleccionados.length }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-secondary small">Créditos</span>
+                <span class="fw-bold" [class.text-danger]="totalCreditos > creditosMaximos">{{ totalCreditos }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-3">
+                <span class="text-secondary small">Límite</span>
+                <span class="fw-bold">{{ creditosMinimos }}–{{ creditosMaximos }} cr.</span>
+              </div>
+
+              <!-- Alerta mínimo -->
+              <div class="alert alert-warning py-2 small mb-3"
+                   *ngIf="cursosSeleccionados.length > 0 && totalCreditos < creditosMinimos">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Necesitas al menos {{ creditosMinimos }} créditos.
+              </div>
+
+              <button class="btn btn-primary w-100 py-3 rounded-3 fw-bold"
+                [disabled]="cursosSeleccionados.length === 0 || loading"
+                (click)="confirmarMatricula()">
+                <span *ngIf="!loading">Finalizar Matrícula</span>
+                <span *ngIf="loading"><span class="spinner-border spinner-border-sm me-2"></span>Procesando...</span>
+              </button>
+              <button class="btn btn-link w-100 mt-2 text-secondary text-decoration-none small"
+                      routerLink="/regular">
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Spinner fuera del flujo principal -->
     <ng-template #spinner>
       <div class="text-center py-5 my-5">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+        <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"></div>
         <p class="mt-3 text-muted fw-bold">Cargando cursos disponibles...</p>
       </div>
     </ng-template>
+
   </div>
 </div>

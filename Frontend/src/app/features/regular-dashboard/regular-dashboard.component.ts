@@ -1,11 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Estudiante } from '../../core/models/estudiante.model';
 import { EstudianteService } from '../../core/services/estudiante.service';
 import { ModalService } from '../../shared/services/modal.service';
-import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { finalize, forkJoin } from 'rxjs';
 
 type ResumenAcademico = {
@@ -18,7 +18,7 @@ type ResumenAcademico = {
 @Component({
   selector: 'app-regular-dashboard',
   standalone: true,
-  imports: [CommonModule, ModalComponent],
+  imports: [CommonModule],
   templateUrl: './regular-dashboard.component.html',
   styleUrls: ['./regular-dashboard.component.css']
 })
@@ -43,11 +43,13 @@ export class RegularDashboardComponent implements OnInit {
     private modalService: ModalService,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    const raw = window.localStorage.getItem('estudiante');
+    if (!isPlatformBrowser(this.platformId)) return;
+    const raw = localStorage.getItem('estudiante');
     if (!raw) {
       this.loading = false;
       this.modalService.showError('Sesión', 'No hay sesión activa. Inicia sesión nuevamente.');
@@ -59,7 +61,7 @@ export class RegularDashboardComponent implements OnInit {
       this.estudiante = JSON.parse(raw) as Estudiante;
     } catch {
       this.loading = false;
-      window.localStorage.removeItem('estudiante');
+      localStorage.removeItem('estudiante');
       this.router.navigate(['/login-regular']);
       return;
     }
@@ -126,14 +128,8 @@ export class RegularDashboardComponent implements OnInit {
   }
 
   verificarYEntrarMatricula(): void {
-    if (!this.estudiante?.idEstudiante) return;
-    this.loading = true;
-    this.estudianteService.verificarPagoMatricula(this.estudiante.idEstudiante)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: (pagado) => this.router.navigate([pagado ? '/matricula-regular' : '/login-matricula-regular']),
-        error: () => this.router.navigate(['/login-matricula-regular'])
-      });
+    // Siempre redirigir al login de matrícula — el estudiante debe ingresar DNI + voucher
+    this.router.navigate(['/login-matricula-regular']);
   }
 
   private normalizarTexto(texto: string): string {
@@ -161,9 +157,9 @@ export class RegularDashboardComponent implements OnInit {
   }
 
   logout(): void {
-    window.localStorage.removeItem('estudiante');
-    window.localStorage.removeItem('token');
-    window.localStorage.removeItem('matricula_voucher');
+    localStorage.removeItem('estudiante');
+    localStorage.removeItem('token');
+    localStorage.removeItem('matricula_voucher');
     this.router.navigate(['/inicio']);
   }
 }

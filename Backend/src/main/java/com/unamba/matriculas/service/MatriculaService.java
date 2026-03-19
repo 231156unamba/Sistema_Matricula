@@ -1,5 +1,7 @@
 package com.unamba.matriculas.service;
 
+import com.unamba.matriculas.dto.CursoDisponibleDTO;
+import com.unamba.matriculas.dto.InfoMatriculaDTO;
 import com.unamba.matriculas.model.*;
 import com.unamba.matriculas.repository.*;
 import com.unamba.matriculas.dto.MatriculaIngresanteRequest;
@@ -8,8 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +28,95 @@ public class MatriculaService {
     private final PagoRepository pagoRepository;
     private final DocumentoIngresanteRepository documentoRepository;
     
+    public List<Curso> obtenerCursosIngresante(Long idEstudiante) throws Exception {
+        estudianteRepository.findById(idEstudiante)
+            .orElseThrow(() -> new Exception("Estudiante no encontrado"));
+        return cursoRepository.findBySemestre(1);
+    }
+
+    public InfoMatriculaDTO obtenerInfoMatricula(Long idEstudiante) throws Exception {
+        Estudiante estudiante = estudianteRepository.findById(idEstudiante)
+            .orElseThrow(() -> new Exception("Estudiante no encontrado"));
+
+        List<DetalleMatricula> historial = detalleMatriculaRepository.findByEstudiante(idEstudiante);
+
+        // Aprobado = estado APROBADO o nota >= 10.5 → NO mostrar
+        List<Long> aprobadosIds = historial.stream()
+            .filter(d -> d.getEstado() == DetalleMatricula.EstadoCurso.APROBADO
+                || (d.getNotaFinal() != null && d.getNotaFinal().compareTo(NOTA_APROBATORIA) >= 0))
+            .map(d -> d.getCurso().getIdCurso())
+            .distinct()
+            .collect(Collectors.toList());
+
+        // Desaprobados: estado DESAPROBADO o nota < 10.5 (con nota)
+        java.util.Map<Long, Long> desaprobadosPorCurso = historial.stream()
+            .filter(d -> d.getEstado() == DetalleMatricula.EstadoCurso.DESAPROBADO
+                || (d.getNotaFinal() != null && d.getNotaFinal().compareTo(NOTA_APROBATORIA) < 0))
+            .collect(Collectors.groupingBy(d -> d.getCurso().getIdCurso(), Collectors.counting()));
+
+        // ¿Tiene algún curso jalado 2+ veces? → límite 14 créditos
+        boolean tieneJaladoDosVeces = desaprobadosPorCurso.values().stream().anyMatch(v -> v >= 2);
+
+        // Semestre actual = semestre más alto que el estudiante tiene en su historial
+        // (ya sea EN_CURSO sin nota, APROBADO, o DESAPROBADO)
+        int semestreActual = historial.stream()
+            .mapToInt(d -> d.getCurso().getSemestre())
+            .max()
+            .orElse(1);
+
+        // Límite superior: semestre actual + 2
+        int semestreMaximo = semestreActual + 2;
+
+        // Cursos de la carrera del estudiante (o comunes)
+        String carreraEstudiante = (estudiante.getCarrera() != null && !estudiante.getCarrera().isBlank())
+            ? estudiante.getCarrera() : null;
+
+        List<Curso> cursosCandidatos = carreraEstudiante != null
+            ? cursoRepository.findByCarreraOrComun(carreraEstudiante)
+            : cursoRepository.findAll();
+
+        List<CursoDisponibleDTO> disponibles = cursosCandidatos.stream()
+            // No mostrar aprobados
+            .filter(c -> !aprobadosIds.contains(c.getIdCurso()))
+            // No mostrar cursos de semestre superior al límite
+            .filter(c -> c.getSemestre() <= semestreMaximo)
+            // Prerrequisitos cumplidos (solo APROBADO cuenta como prereq)
+            .filter(c -> validarPrerrequisitos(idEstudiante, c.getIdCurso()))
+            .map(c -> new CursoDisponibleDTO(
+                c.getIdCurso(), c.getCodigoCurso(), c.getNombre(), c.getCreditos(), c.getSemestre(),
+                desaprobadosPorCurso.getOrDefault(c.getIdCurso(), 0L).intValue()
+            ))
+            .collect(Collectors.toList());
+
+        // Promedio ponderado: solo cursos con nota final
+        List<DetalleMatricula> conNota = historial.stream()
+            .filter(d -> d.getNotaFinal() != null)
+            .collect(Collectors.toList());
+
+        Double promedio = null;
+        if (!conNota.isEmpty()) {
+            double sumaProductos = conNota.stream()
+                .mapToDouble(d -> d.getNotaFinal().doubleValue() * d.getCurso().getCreditos())
+                .sum();
+            int totalCreditos = conNota.stream().mapToInt(d -> d.getCurso().getCreditos()).sum();
+            if (totalCreditos > 0) {
+                promedio = BigDecimal.valueOf(sumaProductos / totalCreditos)
+                    .setScale(2, RoundingMode.HALF_UP).doubleValue();
+            }
+        }
+
+        int creditosMax = tieneJaladoDosVeces ? 14 : estudiante.getCreditosMaximos();
+        int creditosMin = tieneJaladoDosVeces ? 0 : 12;
+
+        InfoMatriculaDTO info = new InfoMatriculaDTO();
+        info.setCursosDisponibles(disponibles);
+        info.setCreditosMinimos(creditosMin);
+        info.setCreditosMaximos(creditosMax);
+        info.setPromedioSemestreAnterior(promedio);
+        info.setTieneJaladoDosVeces(tieneJaladoDosVeces);
+        return info;
+    }
+
     public List<Curso> obtenerCursosDisponibles(Long idEstudiante) throws Exception {
         Estudiante estudiante = estudianteRepository.findById(idEstudiante)
             .orElseThrow(() -> new Exception("Estudiante no encontrado"));
@@ -54,6 +146,11 @@ public class MatriculaService {
         pagoRepository.findByVoucherAndValidadoTrue(request.getVoucher())
             .orElseThrow(() -> new Exception("Voucher no válido"));
         
+        // Verificar si ya existe un estudiante con ese DNI (ya se matriculó antes)
+        if (estudianteRepository.findByDni(request.getDni()).isPresent()) {
+            throw new Exception("Ya existe un ingresante registrado con ese DNI.");
+        }
+
         Estudiante estudiante = new Estudiante();
         estudiante.setDni(request.getDni());
         estudiante.setNombres(request.getNombres());
@@ -107,6 +204,12 @@ public class MatriculaService {
         
         PeriodoAcademico periodo = periodoRepository.findByEstado(PeriodoAcademico.EstadoPeriodo.ABIERTO)
             .orElseThrow(() -> new Exception("No hay periodo académico abierto"));
+
+        // Verificar que no esté ya matriculado en este periodo
+        if (matriculaRepository.findByEstudiante_IdEstudianteAndPeriodo_IdPeriodo(
+                estudiante.getIdEstudiante(), periodo.getIdPeriodo()).isPresent()) {
+            throw new Exception("Ya estás matriculado en el periodo académico actual.");
+        }
         
         int creditosTotales = 0;
         for (Long idCurso : request.getIdCursos()) {
@@ -160,19 +263,23 @@ public class MatriculaService {
         return matricula;
     }
     
+    private static final BigDecimal NOTA_APROBATORIA = new BigDecimal("10.5");
+
     private boolean validarPrerrequisitos(Long idEstudiante, Long idCurso) {
         List<Prerrequisito> prerrequisitos = prerrequisitoRepository.findByCurso_IdCurso(idCurso);
-        
-        if (prerrequisitos.isEmpty()) {
-            return true;
-        }
-        
-        List<DetalleMatricula> cursosAprobados = detalleMatriculaRepository
-            .findCursosAprobadosByEstudiante(idEstudiante);
-        
+        if (prerrequisitos.isEmpty()) return true;
+
+        List<DetalleMatricula> historial = detalleMatriculaRepository.findByEstudiante(idEstudiante);
+        // Prerrequisito cumplido solo si fue APROBADO o tiene nota >= 10.5
+        List<Long> aprobadosIds = historial.stream()
+            .filter(d -> d.getEstado() == DetalleMatricula.EstadoCurso.APROBADO
+                || (d.getNotaFinal() != null && d.getNotaFinal().compareTo(NOTA_APROBATORIA) >= 0))
+            .map(d -> d.getCurso().getIdCurso())
+            .distinct()
+            .collect(Collectors.toList());
+
         return prerrequisitos.stream()
-            .allMatch(prereq -> cursosAprobados.stream()
-                .anyMatch(d -> d.getCurso().getIdCurso().equals(prereq.getCursoPrerrequisito().getIdCurso())));
+            .allMatch(prereq -> aprobadosIds.contains(prereq.getCursoPrerrequisito().getIdCurso()));
     }
     
     /**

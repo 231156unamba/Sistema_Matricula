@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/reportes")
@@ -76,5 +77,23 @@ public class ReportController {
             "periodoActual", reportService.obtenerReportePeriodoActual()
         );
         return ResponseEntity.ok(dashboard);
+    }
+
+    @GetMapping("/matriculas/lista")
+    public ResponseEntity<?> listarMatriculas() {
+        try {
+            return ResponseEntity.ok(reportService.listarMatriculas());
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    @GetMapping("/estudiantes/lista")
+    public ResponseEntity<?> listarEstudiantesConVoucher() {
+        try {
+            return ResponseEntity.ok(reportService.listarEstudiantesConVoucher());
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
     }
 }

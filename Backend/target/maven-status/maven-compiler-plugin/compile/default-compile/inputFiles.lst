@@ -19,6 +19,7 @@ C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\j
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\service\AuthService.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\dto\MatriculaRequest.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\controller\AdminSyncController.java
+C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\dto\CursoDisponibleDTO.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\model\Administrador.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\service\CursoService.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\config\DatabaseConfig.java
@@ -26,6 +27,7 @@ C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\j
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\MatriculasApplication.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\repository\MatriculaRepository.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\service\ReportService.java
+C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\dto\InfoMatriculaDTO.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\repository\DetalleMatriculaRepository.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\controller\EstudianteController.java
 C:\Users\USUARIO\Desktop\unamba\ciclo 0 2\ds20\PROYECTO_FINAL\Backend\src\main\java\com\unamba\matriculas\model\Pago.java

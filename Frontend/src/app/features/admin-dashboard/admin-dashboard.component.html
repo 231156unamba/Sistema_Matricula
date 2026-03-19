@@ -21,6 +21,14 @@
         <i class="bi bi-file-text"></i>
         <span>Reglamento</span>
       </button>
+      <button class="nav-btn" [class.active]="activeTab === 'matriculas'" (click)="setActiveTab('matriculas')">
+        <i class="bi bi-journal-check"></i>
+        <span>Matrículas</span>
+      </button>
+      <button class="nav-btn" [class.active]="activeTab === 'estudiantes'" (click)="setActiveTab('estudiantes')">
+        <i class="bi bi-people"></i>
+        <span>Estudiantes</span>
+      </button>
       <button class="nav-btn" routerLink="/inicio">
         <i class="bi bi-house"></i>
         <span>Inicio</span>
@@ -36,16 +44,21 @@
     <div class="content-header">
       <h1 class="welcome-title">
         {{ activeTab === 'horarios' ? 'Gestión de Horarios' : 
-           activeTab === 'mallas' ? 'Gestión de Mallas' : 'Gestión de Reglamento' }}
+           activeTab === 'mallas' ? 'Gestión de Mallas' :
+           activeTab === 'reglamento' ? 'Gestión de Reglamento' :
+           activeTab === 'matriculas' ? 'Lista de Matrículas' : 'Lista de Estudiantes' }}
       </h1>
       <p class="welcome-subtitle">
         {{ activeTab === 'horarios' ? 'Sube y actualiza los horarios oficiales de cada carrera.' : 
            activeTab === 'mallas' ? 'Actualiza la malla curricular oficial por carrera.' : 
-           'Sube el reglamento general válido para todos los estudiantes.' }}
+           activeTab === 'reglamento' ? 'Sube el reglamento general válido para todos los estudiantes.' :
+           activeTab === 'matriculas' ? 'Consulta todas las matrículas registradas en el sistema.' :
+           'Consulta los estudiantes con su DNI, código y vouchers.' }}
       </p>
     </div>
 
-    <div class="dashboard-card">
+    <!-- Panel upload (horarios, mallas, reglamento) -->
+    <div class="dashboard-card" *ngIf="activeTab === 'horarios' || activeTab === 'mallas' || activeTab === 'reglamento'">
       <div class="upload-section">
         <!-- Selector de Carrera (Solo para Horarios y Mallas) -->
         <div class="form-group mb-4" *ngIf="activeTab !== 'reglamento'">
@@ -83,5 +96,89 @@
         </div>
       </div>
     </div>
+
+    <!-- Panel Matrículas -->
+    <div class="dashboard-card tabla-card" *ngIf="activeTab === 'matriculas'">
+      <div class="tabla-toolbar">
+        <input class="tabla-search" type="text" placeholder="Buscar por nombre, DNI, código..." [(ngModel)]="busquedaMatricula" />
+        <button class="btn-refresh" (click)="cargarMatriculas()"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+      <div *ngIf="loadingLista" class="tabla-loading">Cargando...</div>
+      <div class="tabla-wrap" *ngIf="!loadingLista">
+        <table class="admin-tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre Completo</th>
+              <th>DNI</th>
+              <th>Código</th>
+              <th>Carrera</th>
+              <th>Tipo</th>
+              <th>Periodo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of matriculasFiltradas; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ m.nombreCompleto }}</td>
+              <td>{{ m.dni }}</td>
+              <td>{{ m.codigoEstudiante }}</td>
+              <td>{{ m.carrera || '—' }}</td>
+              <td><span class="badge-tipo" [class.ingresante]="m.tipo === 'INGRESANTE'">{{ m.tipo }}</span></td>
+              <td>{{ m.periodo }}</td>
+              <td>{{ m.fecha | slice:0:10 }}</td>
+            </tr>
+            <tr *ngIf="matriculasFiltradas.length === 0">
+              <td colspan="8" class="tabla-empty">No hay matrículas registradas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Panel Estudiantes -->
+    <div class="dashboard-card tabla-card" *ngIf="activeTab === 'estudiantes'">
+      <div class="tabla-toolbar">
+        <input class="tabla-search" type="text" placeholder="Buscar por nombre, DNI, código..." [(ngModel)]="busquedaEstudiante" />
+        <button class="btn-refresh" (click)="cargarEstudiantes()"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+      <div *ngIf="loadingLista" class="tabla-loading">Cargando...</div>
+      <div class="tabla-wrap" *ngIf="!loadingLista">
+        <table class="admin-tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre Completo</th>
+              <th>DNI</th>
+              <th>Código</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th>Vouchers de Matrícula</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of estudiantesFiltrados; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ e.nombreCompleto }}</td>
+              <td>{{ e.dni }}</td>
+              <td>{{ e.codigoEstudiante || '—' }}</td>
+              <td><span class="badge-tipo" [class.ingresante]="e.tipo === 'INGRESANTE'">{{ e.tipo }}</span></td>
+              <td><span class="badge-estado" [class.activo]="e.estado === 'ACTIVO'">{{ e.estado }}</span></td>
+              <td>
+                <span *ngIf="e.vouchers?.length === 0" class="sin-voucher">Sin voucher</span>
+                <span *ngFor="let v of e.vouchers" class="voucher-chip" [class.validado]="v.validado">
+                  {{ v.voucher }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="estudiantesFiltrados.length === 0">
+              <td colspan="7" class="tabla-empty">No hay estudiantes registrados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </div>

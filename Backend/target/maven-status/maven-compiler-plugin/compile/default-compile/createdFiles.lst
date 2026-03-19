@@ -10,6 +10,7 @@ com\unamba\matriculas\repository\DetalleMatriculaRepository.class
 com\unamba\matriculas\model\Curso.class
 com\unamba\matriculas\model\DetalleMatricula$EstadoCurso.class
 com\unamba\matriculas\dto\LoginRequest.class
+com\unamba\matriculas\dto\InfoMatriculaDTO.class
 com\unamba\matriculas\service\KeycloakIntegrationService$1.class
 com\unamba\matriculas\exception\GlobalExceptionHandler$ErrorResponse.class
 com\unamba\matriculas\model\DetalleMatricula.class
@@ -54,6 +55,7 @@ com\unamba\matriculas\model\Matricula$TipoMatricula.class
 com\unamba\matriculas\config\DatabaseConfig.class
 com\unamba\matriculas\repository\PeriodoAcademicoRepository.class
 com\unamba\matriculas\service\AuthService.class
+com\unamba\matriculas\dto\CursoDisponibleDTO.class
 com\unamba\matriculas\repository\AnuncioRepository.class
 com\unamba\matriculas\repository\CursoRepository.class
 com\unamba\matriculas\controller\CursoController.class

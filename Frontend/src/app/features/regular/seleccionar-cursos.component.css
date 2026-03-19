@@ -1,3 +1,14 @@
+.matricula-shell .card::after,
+.matricula-shell .card:hover::after {
+  display: none !important;
+  content: none !important;
+}
+
+.matricula-shell .card:hover {
+  transform: none !important;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07) !important;
+}
+
 .matricula-shell {
   min-height: 100vh;
   background-color: #f1f5f9;
@@ -15,11 +26,12 @@
   margin-bottom: 0;
 }
 
-.creditos-box {
+/* Stat boxes */
+.stat-box, .creditos-box {
   background: white;
-  padding: 0.75rem 1.25rem;
+  padding: 0.6rem 1.1rem;
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   border: 1px solid #e2e8f0;
   text-align: right;
 }
@@ -29,49 +41,73 @@
   background-color: #fffbeb;
 }
 
-.creditos-box .label {
+.stat-label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.04em;
 }
 
-.creditos-box .value {
-  font-size: 1.25rem;
+.stat-value {
+  font-size: 1.2rem;
   font-weight: 800;
   color: #0f172a;
 }
 
-.table thead th {
+.alert-badge {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
   font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Table */
+.table thead th {
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 1rem 0.75rem;
+  padding: 0.9rem 0.75rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.btn-select {
-  padding: 0.5rem 1.2rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+.row-selected {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+.row-repeticion td {
+  background-color: #fff8f0;
+}
+
+.badge-creditos {
+  background: #e2e8f0;
+  color: #0f172a;
   font-weight: 700;
-  transition: all 0.2s ease;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.btn-select {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.2s;
   border: 2px solid #e2e8f0;
   background: white;
   color: #0f172a;
   cursor: pointer;
-  position: relative;
-  z-index: 5;
-  display: inline-block;
 }
 
 .btn-select:hover {
-  background: #f8fafc;
   border-color: #0f172a;
-  transform: translateY(-1px);
+  background: #f8fafc;
 }
 
 .btn-select.selected {
@@ -80,32 +116,34 @@
   border-color: #0f172a;
 }
 
-.table-hover tbody tr:hover {
-  background-color: rgba(15, 23, 42, 0.02);
-  cursor: pointer;
+/* Resumen */
+.promedio-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
 }
 
-.table-active {
-  background-color: rgba(15, 23, 42, 0.05) !important;
+.selected-list {
+  max-height: 260px;
+  overflow-y: auto;
 }
 
 .selected-item {
-  padding: 0.75rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.selected-item:last-child {
-  border-bottom: none;
-}
+.selected-item:last-child { border-bottom: none; }
 
 .item-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #0f172a;
 }
 
 .item-meta {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #64748b;
 }
 
@@ -113,12 +151,13 @@
   background: #fee2e2;
   color: #ef4444;
   border: none;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: all 0.2s;
 }
 
@@ -129,11 +168,7 @@
 
 .divider {
   height: 1px;
-  background-color: #e2e8f0;
-}
-
-.sticky-top {
-  z-index: 10;
+  background: #e2e8f0;
 }
 
 .btn-primary {
@@ -145,5 +180,10 @@
 .btn-primary:hover:not(:disabled) {
   background: #1e293b;
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.12);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

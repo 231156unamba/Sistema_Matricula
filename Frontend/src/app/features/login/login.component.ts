@@ -38,6 +38,7 @@ export class LoginComponent {
         if (response.success) {
           if (response.estudiante) {
             this.authService.guardarSesion(response);
+            localStorage.setItem('ingresante_voucher', this.voucher);
             const nombres = (response.estudiante as any)?.nombres || '';
             const apellidos = (response.estudiante as any)?.apellidos || '';
             const nombreCompleto = `${nombres} ${apellidos}`.trim();

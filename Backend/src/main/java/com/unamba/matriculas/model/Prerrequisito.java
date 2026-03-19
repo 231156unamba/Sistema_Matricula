@@ -1,6 +1,7 @@
 package com.unamba.matriculas.model;
 
 import jakarta.persistence.*;
+import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "prerrequisitos")
@@ -9,11 +10,11 @@ public class Prerrequisito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_curso")
     private Curso curso;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_curso_prerrequisito")
     private Curso cursoPrerrequisito;
 

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public class MatriculaRequest {
-    @NotNull(message = "El ID del período es obligatorio")
+    // idPeriodo es opcional — el backend usa el periodo ABIERTO activo
     private Long idPeriodo;
     
     @NotEmpty(message = "Debe seleccionar al menos un curso")

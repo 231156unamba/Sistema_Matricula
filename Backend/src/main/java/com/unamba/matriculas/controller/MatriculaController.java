@@ -1,5 +1,6 @@
 package com.unamba.matriculas.controller;
 
+import com.unamba.matriculas.dto.InfoMatriculaDTO;
 import com.unamba.matriculas.dto.MatriculaIngresanteRequest;
 import com.unamba.matriculas.dto.MatriculaRequest;
 import com.unamba.matriculas.model.Matricula;
@@ -21,6 +22,24 @@ public class MatriculaController {
     
     private final MatriculaService matriculaService;
     
+    @GetMapping("/info-matricula/{idEstudiante}")
+    public ResponseEntity<InfoMatriculaDTO> obtenerInfoMatricula(@PathVariable Long idEstudiante) {
+        try {
+            return ResponseEntity.ok(matriculaService.obtenerInfoMatricula(idEstudiante));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/cursos-ingresante/{idEstudiante}")
+    public ResponseEntity<?> obtenerCursosIngresante(@PathVariable Long idEstudiante) {
+        try {
+            return ResponseEntity.ok(matriculaService.obtenerCursosIngresante(idEstudiante));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MatriculaResponse(false, e.getMessage(), null));
+        }
+    }
+
     @GetMapping("/cursos-disponibles/{idEstudiante}")
     public ResponseEntity<List<Curso>> obtenerCursosDisponibles(@PathVariable Long idEstudiante) {
         try {

@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { MatriculaService, Curso } from '../../core/services/matricula.service';
+import { CursoDisponible, InfoMatricula } from '../../core/services/matricula.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../shared/services/modal.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-seleccionar-cursos',
@@ -13,152 +14,181 @@ import { ModalService } from '../../shared/services/modal.service';
   styleUrls: ['./seleccionar-cursos.component.css']
 })
 export class SeleccionarCursosComponent implements OnInit {
-  cursosDisponibles: Curso[] = [];
-  cursosSeleccionados: Curso[] = [];
+  info: InfoMatricula | null = null;
+  cursosSeleccionados: CursoDisponible[] = [];
   estudiante: any = null;
-  loading = false;
-  creditosMaximos = 23;
+  loading = true;
+  error = false;
+
+  private readonly API = 'http://localhost:8080/api/matriculas';
 
   constructor(
-    private matriculaService: MatriculaService,
     private authService: AuthService,
     private modalService: ModalService,
     private router: Router,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    if (typeof window === 'undefined') return;
-
     const sesion = this.authService.obtenerSesion();
-    if (!sesion || !sesion.idEstudiante) {
-      this.router.navigate(['/login-regular']);
+    if (!sesion?.idEstudiante) {
+      this.loading = false;
+      this.router.navigate(['/login-matricula-regular']);
       return;
     }
     this.estudiante = sesion;
-    this.creditosMaximos = this.estudiante.creditosMaximos || 23;
-    
-    this.cargarCursos();
+    this.cargarInfo();
   }
 
-  cargarCursos() {
-    if (!this.estudiante?.idEstudiante) {
-      console.warn('CargarCursos: No hay ID de estudiante');
-      return;
-    }
-
-    console.log('Iniciando carga de cursos para estudiante:', this.estudiante.idEstudiante);
+  cargarInfo(): void {
     this.loading = true;
-    this.cdr.detectChanges();
+    this.error = false;
 
-    this.matriculaService.obtenerCursosDisponibles(this.estudiante.idEstudiante)
-      .subscribe({
-        next: (cursos) => {
-          console.log('Cursos recibidos del servidor:', cursos);
-          this.ngZone.run(() => {
-            this.cursosDisponibles = cursos || [];
-            this.loading = false;
-            // Forzar detección de cambios después de actualizar el estado
-            this.cdr.markForCheck();
-            this.cdr.detectChanges();
-            console.log('Estado actualizado: loading=false, cursos count=', this.cursosDisponibles.length);
-          });
-        },
-        error: (err) => {
-          this.ngZone.run(() => {
-            console.error('Error al cargar cursos:', err);
-            this.loading = false;
-            this.modalService.showError('Error', 'No se pudieron cargar los cursos disponibles.');
-            this.cdr.detectChanges();
-          });
-        }
+    const token = localStorage.getItem('token') || '';
+    const url = `${this.API}/info-matricula/${this.estudiante.idEstudiante}`;
+
+    // Usar fetch nativo para evitar problemas de SSR transfer state con HttpClient
+    fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: InfoMatricula) => {
+        this.ngZone.run(() => {
+          this.info = data;
+          this.loading = false;
+          this.error = false;
+          this.cdr.detectChanges();
+        });
+      })
+      .catch(() => {
+        this.ngZone.run(() => {
+          this.loading = false;
+          this.error = true;
+          this.cdr.detectChanges();
+          this.modalService.showError('Error', 'No se pudieron cargar los cursos.');
+        });
       });
   }
 
-  toggleCurso(curso: Curso) {
-    const index = this.cursosSeleccionados.findIndex(c => c.idCurso === curso.idCurso);
-    if (index > -1) {
-      this.cursosSeleccionados.splice(index, 1);
-    } else {
-      if (this.totalCreditos + curso.creditos > this.creditosMaximos) {
-        this.modalService.showWarning('Límite de créditos', `No puedes superar los ${this.creditosMaximos} créditos.`);
-        return;
-      }
-      this.cursosSeleccionados.push(curso);
-    }
-    this.cdr.detectChanges();
+  get cursosDisponibles(): CursoDisponible[] {
+    return this.info?.cursosDisponibles || [];
+  }
+
+  get creditosMaximos(): number {
+    return this.info?.creditosMaximos ?? 23;
+  }
+
+  get creditosMinimos(): number {
+    return this.info?.creditosMinimos ?? 12;
+  }
+
+  get totalCreditos(): number {
+    return this.cursosSeleccionados.reduce((s, c) => s + c.creditos, 0);
+  }
+
+  get promedio(): number | null {
+    return this.info?.promedioSemestreAnterior ?? null;
   }
 
   isCursoSeleccionado(idCurso: number): boolean {
     return this.cursosSeleccionados.some(c => c.idCurso === idCurso);
   }
 
-  get totalCreditos(): number {
-    return this.cursosSeleccionados.reduce((sum, c) => sum + c.creditos, 0);
+  toggleCurso(curso: CursoDisponible): void {
+    const idx = this.cursosSeleccionados.findIndex(c => c.idCurso === curso.idCurso);
+    if (idx > -1) {
+      // Reasignar para que Angular detecte el cambio
+      this.cursosSeleccionados = this.cursosSeleccionados.filter(c => c.idCurso !== curso.idCurso);
+    } else {
+      if (this.totalCreditos + curso.creditos > this.creditosMaximos) {
+        this.modalService.showWarning('Límite de créditos',
+          `No puedes superar los ${this.creditosMaximos} créditos permitidos.`);
+        return;
+      }
+      this.cursosSeleccionados = [...this.cursosSeleccionados, curso];
+    }
+    this.cdr.detectChanges();
   }
 
-  confirmarMatricula() {
+  confirmarMatricula(): void {
     if (this.cursosSeleccionados.length === 0) {
       this.modalService.showWarning('Atención', 'Debes seleccionar al menos un curso.');
       return;
     }
-
+    if (this.totalCreditos < this.creditosMinimos) {
+      this.modalService.showWarning('Mínimo de créditos',
+        `Debes seleccionar al menos ${this.creditosMinimos} créditos.`);
+      return;
+    }
     this.modalService.showConfirmation(
       'Confirmar Matrícula',
-      `¿Estás seguro de matricularte en ${this.cursosSeleccionados.length} cursos con un total de ${this.totalCreditos} créditos?`,
-      'Confirmar',
-      'Cancelar'
-    ).subscribe((result: boolean) => {
-      if (result) {
-        this.registrar();
-      }
-    });
+      `¿Confirmas tu matrícula en ${this.cursosSeleccionados.length} cursos (${this.totalCreditos} créditos)?`,
+      'Confirmar', 'Cancelar'
+    ).subscribe((ok: boolean) => { if (ok) this.registrar(); });
   }
 
-  registrar() {
-    const voucher = localStorage.getItem('matricula_voucher') || 'VCH-VALIDADO';
+  registrar(): void {
+    const voucher = localStorage.getItem('matricula_voucher') || '';
+    if (!voucher) {
+      this.modalService.showError('Error', 'No se encontró el voucher de matrícula. Vuelve a iniciar sesión.');
+      this.router.navigate(['/login-matricula-regular']);
+      return;
+    }
 
-    const request = {
+    const body = JSON.stringify({
       idEstudiante: this.estudiante.idEstudiante,
       idCursos: this.cursosSeleccionados.map(c => c.idCurso),
-      voucher: voucher
-    };
+      voucher
+    });
 
+    const token = localStorage.getItem('token') || '';
     this.loading = true;
     this.cdr.detectChanges();
 
-    this.matriculaService.registrarMatricula(request)
-      .subscribe({
-        next: (res: any) => {
-          this.ngZone.run(() => {
-            this.loading = false;
-            if (res.success) {
-              localStorage.removeItem('matricula_voucher');
-              this.modalService.showSuccess('¡Éxito!', 'Tu matrícula ha sido registrada correctamente.');
-              setTimeout(() => this.router.navigate(['/regular']), 2000);
-            } else {
-              this.modalService.showError('Error', res.message);
+    fetch(`${this.API}/regular`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body
+    })
+      .then(async res => {
+        const data = await res.json();
+        this.ngZone.run(() => {
+          this.loading = false;
+          if (res.ok) {
+            localStorage.removeItem('matricula_voucher');
+            this.modalService.showSuccess('¡Éxito!', 'Tu matrícula fue registrada correctamente.');
+            setTimeout(() => this.router.navigate(['/regular']), 2000);
+          } else {
+            // Extraer mensaje de error del backend
+            let msg = 'No se pudo registrar la matrícula.';
+            if (data?.message) {
+              msg = data.message;
+            } else if (typeof data === 'object') {
+              // Puede ser un mapa de errores de validación: { campo: "mensaje" }
+              msg = Object.values(data).join(', ');
             }
-            this.cdr.detectChanges();
-          });
-        },
-        error: (err) => {
-          this.ngZone.run(() => {
-            this.loading = false;
-            this.modalService.showError('Error', err.error?.message || 'Error al registrar la matrícula.');
-            this.cdr.detectChanges();
-          });
-        }
+            this.modalService.showError('Error', msg);
+          }
+          this.cdr.detectChanges();
+        });
+      })
+      .catch(() => {
+        this.ngZone.run(() => {
+          this.loading = false;
+          this.modalService.showError('Error', 'Error al registrar la matrícula.');
+          this.cdr.detectChanges();
+        });
       });
   }
 
-  logout() {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('estudiante');
-      window.localStorage.removeItem('token');
-      window.localStorage.removeItem('matricula_voucher');
-    }
+  logout(): void {
+    localStorage.removeItem('estudiante');
+    localStorage.removeItem('token');
+    localStorage.removeItem('matricula_voucher');
     this.router.navigate(['/inicio']);
   }
 }

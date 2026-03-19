@@ -6,8 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -194,5 +193,57 @@ public class ReportService {
                 "totalCreditos", totalCreditosPeriodo
             )
         );
+    }
+
+    public List<Map<String, Object>> listarMatriculas() {
+        return matriculaRepository.findAll().stream().map(m -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("idMatricula", m.getIdMatricula());
+            row.put("tipo", m.getTipo() != null ? m.getTipo().name() : "");
+            row.put("fecha", m.getFecha() != null ? m.getFecha().toString() : "");
+            if (m.getEstudiante() != null) {
+                Estudiante e = m.getEstudiante();
+                row.put("idEstudiante", e.getIdEstudiante());
+                row.put("nombreCompleto", (e.getNombres() != null ? e.getNombres() : "") + " " + (e.getApellidos() != null ? e.getApellidos() : ""));
+                row.put("dni", e.getDni() != null ? e.getDni() : "");
+                row.put("codigoEstudiante", e.getCodigoEstudiante() != null ? e.getCodigoEstudiante() : "");
+                row.put("carrera", e.getCarrera() != null ? e.getCarrera() : "");
+            }
+            if (m.getPeriodo() != null) {
+                row.put("periodo", m.getPeriodo().getAnio() + " - " + m.getPeriodo().getSemestre().name());
+            }
+            return row;
+        }).collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> listarEstudiantesConVoucher() {
+        List<Estudiante> estudiantes = estudianteRepository.findAll();
+        List<Pago> pagos = pagoRepository.findAll();
+
+        // Agrupar vouchers de matrícula por estudiante
+        Map<Long, List<Pago>> pagosPorEstudiante = pagos.stream()
+            .filter(p -> p.getTipoPago() == Pago.TipoPago.MATRICULA)
+            .filter(p -> p.getEstudiante() != null)
+            .collect(Collectors.groupingBy(p -> p.getEstudiante().getIdEstudiante()));
+
+        return estudiantes.stream().map(e -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("idEstudiante", e.getIdEstudiante());
+            row.put("nombreCompleto", (e.getNombres() != null ? e.getNombres() : "") + " " + (e.getApellidos() != null ? e.getApellidos() : ""));
+            row.put("dni", e.getDni() != null ? e.getDni() : "");
+            row.put("codigoEstudiante", e.getCodigoEstudiante() != null ? e.getCodigoEstudiante() : "");
+            row.put("tipo", e.getTipo() != null ? e.getTipo().name() : "");
+            row.put("estado", e.getEstado() != null ? e.getEstado().name() : "");
+            List<Pago> pagosEst = pagosPorEstudiante.getOrDefault(e.getIdEstudiante(), new ArrayList<>());
+            List<Map<String, Object>> voucherList = pagosEst.stream().map(p -> {
+                Map<String, Object> v = new LinkedHashMap<>();
+                v.put("voucher", p.getVoucher());
+                v.put("validado", p.getValidado() != null && p.getValidado());
+                v.put("fecha", p.getFechaPago() != null ? p.getFechaPago().toString() : "");
+                return v;
+            }).collect(Collectors.toList());
+            row.put("vouchers", voucherList);
+            return row;
+        }).collect(Collectors.toList());
     }
 }

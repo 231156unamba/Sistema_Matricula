@@ -1,4 +1,101 @@
-<div class="registro-container">
-  <h2>Registro de Ingresante</h2>
-  <!-- TODO: Agregar formulario de registro -->
+<!-- FASE: FORMULARIO -->
+<div class="registro-container" *ngIf="fase === 'formulario'">
+  <div class="registro-card">
+    <div class="registro-header">
+      <h2>Matrícula de Ingresante</h2>
+      <p>Completa tus datos y documentos para registrar tu matrícula</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="registro-form">
+      <h3 class="seccion-titulo">Datos Personales</h3>
+
+      <div class="form-group">
+        <label for="nombres">Nombres</label>
+        <input type="text" id="nombres" class="form-control"
+          [(ngModel)]="nombres" name="nombres" placeholder="Ingresa tus nombres" required />
+      </div>
+
+      <div class="form-group">
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" class="form-control"
+          [(ngModel)]="apellidos" name="apellidos" placeholder="Ingresa tus apellidos" required />
+      </div>
+
+      <h3 class="seccion-titulo">Documentos Requeridos</h3>
+      <p class="seccion-desc">Ingresa el número o código de cada documento</p>
+
+      <div class="form-group">
+        <label for="declaracionJurada">Declaración Jurada</label>
+        <input type="text" id="declaracionJurada" class="form-control"
+          [(ngModel)]="declaracionJurada" name="declaracionJurada" placeholder="N° de declaración jurada" required />
+      </div>
+
+      <div class="form-group">
+        <label for="certificadoEstudios">Certificado de Estudios</label>
+        <input type="text" id="certificadoEstudios" class="form-control"
+          [(ngModel)]="certificadoEstudios" name="certificadoEstudios" placeholder="N° de certificado de estudios" required />
+      </div>
+
+      <div class="form-group">
+        <label for="boletaMatricula">Boleta de Matrícula</label>
+        <input type="text" id="boletaMatricula" class="form-control"
+          [(ngModel)]="boletaMatricula" name="boletaMatricula" placeholder="N° de boleta de matrícula" required />
+      </div>
+
+      <div class="form-group">
+        <label for="boletaExamen">Boleta de Examen</label>
+        <input type="text" id="boletaExamen" class="form-control"
+          [(ngModel)]="boletaExamen" name="boletaExamen" placeholder="N° de boleta de examen" required />
+      </div>
+
+      <div class="form-group">
+        <label for="pagoCentroMedico">Pago Centro Médico</label>
+        <input type="text" id="pagoCentroMedico" class="form-control"
+          [(ngModel)]="pagoCentroMedico" name="pagoCentroMedico" placeholder="N° de pago centro médico" required />
+      </div>
+
+      <div class="form-group">
+        <label for="hojaMatricula">Hoja de Matrícula</label>
+        <input type="text" id="hojaMatricula" class="form-control"
+          [(ngModel)]="hojaMatricula" name="hojaMatricula" placeholder="N° de hoja de matrícula" required />
+      </div>
+
+      <button type="submit" class="btn-matricular" [disabled]="loading">
+        <span *ngIf="!loading">Registrar Matrícula</span>
+        <span *ngIf="loading">Procesando...</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- FASE: CURSOS ASIGNADOS -->
+<div class="cursos-container" *ngIf="fase === 'cursos'">
+  <div class="cursos-card">
+    <div class="cursos-header">
+      <div class="check-icon">✓</div>
+      <h2>¡Matrícula Registrada!</h2>
+      <p>Estos son los cursos que llevarás este semestre</p>
+    </div>
+
+    <div class="cursos-info">
+      <span class="badge-semestre">Primer Semestre</span>
+      <span class="badge-creditos">{{ totalCreditos }} créditos en total</span>
+    </div>
+
+    <div class="cursos-lista" *ngIf="cursosAsignados.length > 0; else sinCursos">
+      <div class="curso-item" *ngFor="let curso of cursosAsignados">
+        <div class="curso-info">
+          <span class="curso-codigo">{{ curso.codigoCurso }}</span>
+          <span class="curso-nombre">{{ curso.nombre }}</span>
+        </div>
+        <span class="curso-creditos">{{ curso.creditos }} cr.</span>
+      </div>
+    </div>
+
+    <ng-template #sinCursos>
+      <p class="sin-cursos">No se encontraron cursos asignados. Contacta a la administración.</p>
+    </ng-template>
+
+    <button class="btn-inicio" (click)="irAlInicio()">Ir al Inicio</button>
+  </div>
 </div>

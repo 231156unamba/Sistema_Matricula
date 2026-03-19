@@ -33,6 +33,9 @@ public class Curso {
     @Column(name = "semestre", nullable = false)
     private Integer semestre;
 
+    @Column(name = "carrera", length = 100)
+    private String carrera;
+
     public Curso() {}
 
     public Curso(Long idCurso, String codigoCurso, String nombre, Integer creditos, Integer semestre) {
@@ -53,4 +56,6 @@ public class Curso {
     public void setCreditos(Integer creditos) { this.creditos = creditos; }
     public Integer getSemestre() { return semestre; }
     public void setSemestre(Integer semestre) { this.semestre = semestre; }
+    public String getCarrera() { return carrera; }
+    public void setCarrera(String carrera) { this.carrera = carrera; }
 }

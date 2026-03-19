@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../shared/services/modal.service';
-import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-login-regular',
@@ -21,7 +20,8 @@ export class LoginRegularComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private ngZone: NgZone
   ) {}
 
   onSubmit() {
@@ -31,26 +31,28 @@ export class LoginRegularComponent {
     }
 
     this.loading = true;
-    this.authService.loginRegular(this.dni, this.codigo)
-      .pipe(finalize(() => { this.loading = false; }))
-      .subscribe({
+    this.authService.loginRegular(this.dni, this.codigo).subscribe({
       next: (response) => {
-        if (response.success) {
-          this.authService.guardarSesion(response);
-          const nombres = (response.estudiante as any)?.nombres || '';
-          const apellidos = (response.estudiante as any)?.apellidos || '';
-          const nombreCompleto = `${nombres} ${apellidos}`.trim();
-          this.modalService.showSuccess('¡Bienvenid@!', nombreCompleto ? `Hola, ${nombreCompleto}` : 'Login exitoso');
-          setTimeout(() => {
-            this.router.navigate(['/regular']);
-          }, 1500);
-        } else {
-          this.modalService.showError('Error', response.message);
-        }
+        this.ngZone.run(() => {
+          this.loading = false;
+          if (response.success) {
+            this.authService.guardarSesion(response);
+            const nombres = (response.estudiante as any)?.nombres || '';
+            const apellidos = (response.estudiante as any)?.apellidos || '';
+            const nombreCompleto = `${nombres} ${apellidos}`.trim();
+            this.modalService.showSuccess('¡Bienvenid@!', nombreCompleto ? `Hola, ${nombreCompleto}` : 'Login exitoso');
+            setTimeout(() => this.router.navigate(['/regular']), 1500);
+          } else {
+            this.modalService.showError('Error', response.message);
+          }
+        });
       },
       error: (error) => {
-        const backendMsg = error?.error?.message || error?.error?.error || error?.message;
-        this.modalService.showError('Error', backendMsg || 'Credenciales incorrectas.');
+        this.ngZone.run(() => {
+          this.loading = false;
+          const backendMsg = error?.error?.message || error?.error?.error || error?.message;
+          this.modalService.showError('Error', backendMsg || 'Credenciales incorrectas.');
+        });
       }
     });
   }
